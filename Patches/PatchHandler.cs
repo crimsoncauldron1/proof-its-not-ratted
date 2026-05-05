@@ -43,7 +43,8 @@ namespace Seralyth.Patches
 
         public static void PatchAll(bool awake = false)
         {
-            if (IsPatched) return;
+            if (IsPatched && !awake) return;
+
             instance ??= new HarmonyLib.Harmony(PluginInfo.GUID);
 
             Type[] types; // Allows for cross mod loader support
@@ -57,7 +58,7 @@ namespace Seralyth.Patches
             }
 
             foreach (var type in types
-                         .Where(t => t.IsClass && t.GetCustomAttribute<HarmonyPatch>() != null && t.GetCustomAttribute<PatchOnAwake>() != null == awake))
+                         .Where(t => t != null && t.IsClass && t.GetCustomAttribute<HarmonyPatch>() != null && (t.GetCustomAttribute<PatchOnAwake>() != null) == awake))
             {
                 try
                 {
@@ -66,20 +67,24 @@ namespace Seralyth.Patches
                 catch (Exception ex)
                 {
                     PatchErrors++;
+
                     if (type.GetCustomAttribute<SecurityPatch>() != null)
                         CriticalPatchFailed = true;
+
                     LogManager.LogError($"Failed to patch {type.FullName}: {ex}");
                 }
             }
 
             LogManager.Log($"Patched with {PatchErrors} errors");
 
-            IsPatched = !awake;
+            if (!awake)
+                IsPatched = true;
         }
 
         public static void UnpatchAll()
         {
             if (instance == null || !IsPatched) return;
+
             instance.UnpatchSelf();
             IsPatched = false;
             instance = null;
@@ -87,10 +92,19 @@ namespace Seralyth.Patches
 
         public static void ApplyPatch(Type targetClass, string methodName, MethodInfo prefix = null, MethodInfo postfix = null, Type[] parameterTypes = null)
         {
+            if (targetClass == null)
+                throw new ArgumentNullException(nameof(targetClass));
+
+            if (string.IsNullOrWhiteSpace(methodName))
+                throw new ArgumentException("Method name cannot be null or empty.", nameof(methodName));
+
+            instance ??= new HarmonyLib.Harmony(PluginInfo.GUID);
+
             var original =
                 (parameterTypes == null ?
                 targetClass.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static) :
                 targetClass.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, parameterTypes, null)) ?? throw new Exception($"Method '{methodName}' not found on {targetClass.FullName}");
+
             instance.Patch(original,
                 prefix: prefix != null ? new HarmonyMethod(prefix) : null,
                 postfix: postfix != null ? new HarmonyMethod(postfix) : null);
@@ -98,10 +112,20 @@ namespace Seralyth.Patches
 
         public static void RemovePatch(Type targetClass, string methodName, Type[] parameterTypes = null)
         {
+            if (instance == null)
+                return;
+
+            if (targetClass == null)
+                throw new ArgumentNullException(nameof(targetClass));
+
+            if (string.IsNullOrWhiteSpace(methodName))
+                throw new ArgumentException("Method name cannot be null or empty.", nameof(methodName));
+
             var original =
                 (parameterTypes == null ?
                 targetClass.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static) :
                 targetClass.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static, null, parameterTypes, null)) ?? throw new Exception($"Method '{methodName}' not found on {targetClass.FullName}");
+
             instance.Unpatch(original, HarmonyPatchType.All, instance.Id);
         }
 
@@ -113,15 +137,25 @@ namespace Seralyth.Patches
                 typeof(URLBlocker).GetMethod("IsBlockedProcess", BindingFlags.NonPublic | BindingFlags.Static),
                 typeof(URLBlocker).GetMethod("ExtractUrls", BindingFlags.NonPublic | BindingFlags.Static),
                 typeof(URLBlocker).GetMethod("ExtractAndDecodeBase64", BindingFlags.NonPublic | BindingFlags.Static),
-            };
+            }.Where(method => method != null).ToArray();
         }
 
         public static void PatchIntegrityCheck()
         {
             if (instance == null) return;
 
-            var patchedMethods = Assembly.GetExecutingAssembly()
-                .GetTypes()
+            Type[] types;
+            try
+            {
+                types = Assembly.GetExecutingAssembly().GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                types = e.Types.Where(t => t != null).ToArray();
+            }
+
+            var patchedMethods = types
+                .Where(t => t != null)
                 .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
                 .Where(m => m.GetCustomAttributes(typeof(HarmonyPatch), false).Length > 0);
 
@@ -129,6 +163,7 @@ namespace Seralyth.Patches
 
             var allMethods = patchedMethods
                 .Concat(protectedMethods)
+                .Where(method => method != null)
                 .Distinct();
 
             foreach (var method in allMethods)
@@ -143,7 +178,7 @@ namespace Seralyth.Patches
 
                 var owners = patches
                     .Select(p => p.owner)
-                    .Where(owner => owner != null && owner != instance.Id)
+                    .Where(owner => !string.IsNullOrEmpty(owner) && owner != instance.Id)
                     .Distinct()
                     .ToList();
 
@@ -153,7 +188,10 @@ namespace Seralyth.Patches
                     {
                         instance.Unpatch(method, HarmonyPatchType.All, owner);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        LogManager.LogError($"Failed to remove external patch from {method.Name}: {ex}");
+                    }
                 }
             }
         }
