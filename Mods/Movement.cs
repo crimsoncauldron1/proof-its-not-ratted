@@ -2500,7 +2500,7 @@ namespace Seralyth.Mods
                 "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/ForestToHoverboard",
                 "Environment Objects/TriggerZones_Prefab/JoinRoomTriggers_Prefab/JoinPublicRoom - Hoverboard from Forest"
             },
-            new[]
+            new[] // Monke Blocks
             {
                 "Monke Blocks",
                 "Environment Objects/TriggerZones_Prefab/ZoneTransitions_Prefab/Regional Transition/MonkeBlocksElevatorExit",

@@ -124,21 +124,8 @@ namespace Seralyth.Mods
 
                 string soundKey = "SoundboardSound" + soundName.Hash();
 
-                if (RecorderPatch.enabled)
-                {
-                    ButtonInfo buttonInfo = null;
-                    buttonInfo = new ButtonInfo
-                    {
-                        buttonText = soundKey,
-                        overlapText = soundName,
-                        toolTip = $"Allows you to view {soundName}'s properties.",
-                        method = () => LoadSoundProperties(soundName, soundPath, soundName.Hash()),
-                        isTogglable = false
-                    };
-
-                    soundButtons.Add(buttonInfo);
-                }
-                else if (!RecorderPatch.enabled || LegacySoundboard)
+                
+                if (!RecorderPatch.enabled || LegacySoundboard)
                 {
                     if (BindMode > 0)
                     {
@@ -148,7 +135,7 @@ namespace Seralyth.Mods
                             overlapText = soundName,
                             method = () => PrepareBindAudio(soundPath),
                             disableMethod = StopAllSounds,
-                            toolTip = $"Plays {fileName} through your microphone."
+                            toolTip = $"Plays {soundName} through your microphone."
                         });
                     }
                     else
@@ -161,7 +148,7 @@ namespace Seralyth.Mods
                                 overlapText = soundName,
                                 enableMethod = () => PlayAudio(soundPath),
                                 disableMethod = StopAllSounds,
-                                toolTip = $"Plays {fileName} through your microphone."
+                                toolTip = $"Plays {soundName} through your microphone."
                             });
                         }
                         else
@@ -169,13 +156,27 @@ namespace Seralyth.Mods
                             soundButtons.Add(new ButtonInfo
                             {
                                 buttonText = soundKey,
-                                overlapText = fileName,
+                                overlapText = soundName,
                                 method = () => PlayAudio(soundPath),
                                 isTogglable = false,
-                                toolTip = $"Plays {fileName} through your microphone."
+                                toolTip = $"Plays {soundName} through your microphone."
                             });
                         }
                     }
+                }
+                else if (RecorderPatch.enabled)
+                {
+                    ButtonInfo buttonInfo = null;
+                    buttonInfo = new ButtonInfo
+                    {
+                        buttonText = soundKey,
+                        overlapText = soundName,
+                        toolTip = $"Allows you to view {soundName}'s properties.",
+                        method = () => LoadSoundProperties(soundName, soundPath, soundName.Hash()),
+                        isTogglable = false
+                    };
+
+                    soundButtons.Add(buttonInfo);
                 }
             }
 
@@ -324,6 +325,12 @@ namespace Seralyth.Mods
                 return string.Join(" ", parts);
             }
 
+            float Step(float value, float step)
+            {
+                return Mathf.Round(value / step) * step;
+            }
+                
+
             playButton = new ButtonInfo
             {
                 buttonText = $"Play or Pause SoundboardSound {hashedName}",
@@ -431,18 +438,18 @@ namespace Seralyth.Mods
                     overlapText = $"Change Volume <color=grey>[</color><color=green>{Math.Round(sound.Clip.Volume, 1)}</color><color=grey>]</color>",
                     method = () =>
                     {
-                        sound.Clip.Volume = Mathf.Clamp(sound.Clip.Volume + 0.05f, 0, 10);
-                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{Math.Round(sound.Clip.Volume, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Volume = Mathf.Clamp(Step(sound.Clip.Volume + 0.05f, 0.05f), 0, 10);
+                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{sound.Clip.Volume:F2}</color><color=grey>]</color>";
                     },
                     enableMethod = () =>
                     {
-                        sound.Clip.Volume = Mathf.Clamp(sound.Clip.Volume + 0.05f, 0, 10);
-                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{Math.Round(sound.Clip.Volume, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Volume = Mathf.Clamp(Step(sound.Clip.Volume + 0.05f, 0.05f), 0, 10);
+                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{sound.Clip.Volume:F2}</color><color=grey>]</color>";
                     },
                     disableMethod = () =>
                     {
-                        sound.Clip.Volume = Mathf.Clamp(sound.Clip.Volume - 0.05f, 0, 10);
-                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{Math.Round(sound.Clip.Volume, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Volume = Mathf.Clamp(Step(sound.Clip.Volume - 0.05f, 0.05f), 0, 10);
+                        volumeButton.overlapText = $"Change Volume <color=grey>[</color><color=green>{sound.Clip.Volume:F2}</color><color=grey>]</color>";
                     },
                     incremental = true,
                     isTogglable = false,
@@ -455,18 +462,18 @@ namespace Seralyth.Mods
                     overlapText = $"Change Speed <color=grey>[</color><color=green>{Math.Round(sound.Clip.Speed, 1)}</color><color=grey>]</color>",
                     method = () =>
                     {
-                        sound.Clip.Speed = Mathf.Clamp(sound.Clip.Speed + 0.05f, 0, 5);
-                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{Math.Round(sound.Clip.Speed, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Speed = Mathf.Clamp(Step(sound.Clip.Speed + 0.05f, 0.05f), 0, 5);
+                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{sound.Clip.Speed:F2}</color><color=grey>]</color>";
                     },
                     enableMethod = () =>
                     {
-                        sound.Clip.Speed = Mathf.Clamp(sound.Clip.Speed + 0.05f, 0, 5);
-                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{Math.Round(sound.Clip.Speed, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Speed = Mathf.Clamp(Step(sound.Clip.Speed + 0.05f, 0.05f), 0, 5);
+                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{sound.Clip.Speed:F2}</color><color=grey>]</color>";
                     },
                     disableMethod = () =>
                     {
-                        sound.Clip.Speed = Mathf.Clamp(sound.Clip.Speed - 0.05f, 0, 5);
-                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{Math.Round(sound.Clip.Speed, 1)}</color><color=grey>]</color>";
+                        sound.Clip.Speed = Mathf.Clamp(Step(sound.Clip.Speed - 0.05f, 0.05f), 0, 5);
+                        speedButton.overlapText = $"Change Speed <color=grey>[</color><color=green>{sound.Clip.Speed:F2}</color><color=grey>]</color>";
                     },
                     incremental = true,
                     isTogglable = false,
@@ -565,14 +572,17 @@ namespace Seralyth.Mods
                 return;
             }
 
-
-            if (RecorderPatch.enabled)
-                VoiceManager.Get().AudioClip(sound, disableMicrophone);
-            else
+            if (!RecorderPatch.enabled)
             {
                 NetworkSystem.Instance.VoiceConnection.PrimaryRecorder.SourceType = Recorder.InputSourceType.AudioClip;
                 NetworkSystem.Instance.VoiceConnection.PrimaryRecorder.AudioClip = sound;
                 NetworkSystem.Instance.VoiceConnection.PrimaryRecorder.RestartRecording(true);
+            }
+            else if (RecorderPatch.enabled)
+            {
+                if (LegacySoundboard && VoiceManager.Get().AudioClips.Count == 1)
+                    VoiceManager.Get().StopAudioClips();
+                VoiceManager.Get().AudioClip(sound, disableMicrophone);
             }
 
             if (!LoopAudio)

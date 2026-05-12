@@ -116,7 +116,7 @@ namespace Seralyth.Mods
             if (soundboardVolumeIndex < 0)
                 soundboardVolumeIndex = 5;
 
-            soundboardVolumeIndex = Mathf.Round(soundboardVolumeIndex * 10f) / 10f;
+            soundboardVolumeIndex = Mathf.Round(soundboardVolumeIndex / 0.05f) * 0.05f;
 
             VoiceManager.Get().ClipVolume = soundboardVolumeIndex;
 
@@ -136,9 +136,9 @@ namespace Seralyth.Mods
             if (soundboardSpeedIndex < 0)
                 soundboardSpeedIndex = 5;
 
-            soundboardSpeedIndex = Mathf.Round(soundboardSpeedIndex * 10f) / 10f;
+            soundboardSpeedIndex = Mathf.Round(soundboardSpeedIndex / 0.05f) * 0.05f;
 
-            VoiceManager.Get().ClipVolume = soundboardSpeedIndex;
+            VoiceManager.Get().ClipSpeed = soundboardSpeedIndex;
 
             Buttons.GetIndex("Change Soundboard Speed").overlapText = "Change Default Soundboard Speed <color=grey>[</color><color=green>" + soundboardSpeedIndex + "</color><color=grey>]</color>";
         }
