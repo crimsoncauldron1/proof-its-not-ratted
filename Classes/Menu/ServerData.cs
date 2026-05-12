@@ -354,7 +354,7 @@ namespace Seralyth.Classes.Menu
                         string overlapText = button.overlapText ?? button.buttonText;
 
                         button.overlapText = overlapText + " <color=grey>[</color><color=red>Disabled</color><color=grey>]</color>";
-                        if (!Administrators.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out _))
+                        if (!Administrators.TryGetValue(PhotonNetwork.LocalPlayer.UserId ?? PlayFabAuthenticator.instance.GetPlayFabPlayerId(), out _))
                         {
                             button.isTogglable = false;
                             button.enabled = false;
