@@ -674,7 +674,8 @@ namespace Seralyth.Mods
         private static Texture2D tapTxt;
         private static Texture2D warningTxt;
 
-        private static readonly Dictionary<VRRig, object[]> handTaps = new Dictionary<VRRig, object[]>();
+        public static List<object[]> handTaps = new List<object[]>();
+
         public static void OnHandTapGamesenseRing(VRRig rig, Vector3 position)
         {
             if (rig.isLocal)
@@ -683,134 +684,87 @@ namespace Seralyth.Mods
             if (Vector3.Distance(GorillaTagger.Instance.bodyCollider.transform.position, position) > 20f)
                 return;
 
-            handTaps[rig] = new object[]
-            {
-                rig,
-                position,
-                Time.time,
-                null
-            };
-        }
-
-        public static void GamesenseRing()
-        {
             bool fmt = Buttons.GetIndex("Follow Menu Theme").enabled;
             bool hoc = Buttons.GetIndex("Hidden on Camera").enabled;
             bool tt = Buttons.GetIndex("Transparent Theme").enabled;
 
-            List<VRRig> toRemove = new List<VRRig>();
-            List<object[]> handTapValues = handTaps.Values.ToList();
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Object.Destroy(cube.GetComponent<Collider>());
+            if (hoc) cube.layer = 19;
 
-            for (int i = 0; i < handTaps.Count; i++)
+            if (tapMat == null)
             {
-                object[] handTapData = handTapValues[i];
-                VRRig rig = (VRRig)handTapData[0];
-                Vector3 position = (Vector3)handTapData[1];
+                tapMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                tapMat.SetFloat("_Surface", 1);
+                tapMat.SetFloat("_Blend", 0);
+                tapMat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+                tapMat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+                tapMat.SetFloat("_ZWrite", 0);
+                tapMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                tapMat.renderQueue = (int)RenderQueue.Transparent;
+            }
 
-                float timestamp = (float)handTapData[2];
-                GameObject gameObject = (GameObject)handTapData[3];
+            if (tapTxt == null) tapTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/footstep.png", "footstep.png");
+            if (warningTxt == null) warningTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/warning.png", "warning.png");
 
-                if (Time.time > timestamp + 1f)
+            Renderer renderer = cube.GetComponent<Renderer>();
+            renderer.material = tapMat;
+            renderer.material.mainTexture = (VRRig.LocalRig.IsTagged() == rig.IsTagged()) ? tapTxt : warningTxt;
+
+            Color targetColor = rig.GetColor();
+            if (fmt) targetColor = backgroundColor.GetCurrentColor();
+            if (tt) targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, 0.5f);
+            renderer.material.color = targetColor;
+
+            handTaps.Add(new object[] { rig, position, Time.time, cube, targetColor });
+        }
+
+        public static void GamesenseRing()
+        {
+            for (int i = handTaps.Count - 1; i >= 0; i--)
+            {
+                object[] ringData = handTaps[i];
+                Vector3 worldPos = (Vector3)ringData[1];
+                float timestamp = (float)ringData[2];
+                GameObject obj = (GameObject)ringData[3];
+                Color baseColor = (Color)ringData[4];
+
+                float age = Time.time - timestamp;
+
+                if (age > 1f || obj == null)
                 {
-                    toRemove.Add(rig);
+                    if (obj != null) Object.Destroy(obj);
+                    handTaps.RemoveAt(i);
                     continue;
                 }
 
-                if (gameObject == null)
-                {
-                    gameObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    Object.Destroy(gameObject.GetComponent<Collider>());
+                float x = Vector3.Dot((worldPos - Camera.main.transform.position).normalized, Camera.main.transform.right);
+                float y = Vector3.Dot((worldPos - Camera.main.transform.position).normalized, Camera.main.transform.up);
 
-                    if (tapMat == null)
-                    {
-                        tapMat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                Vector2 dir = new Vector2(x, y);
 
-                        if (tapTxt == null)
-                            tapTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/footstep.png", "Images/Mods/Visuals/footstep.png");
+                obj.transform.position = Camera.main.transform.position + Camera.main.transform.forward * 0.5f
+                                           + (Camera.main.transform.right * dir.x + Camera.main.transform.up * dir.y) * 0.2f;
+                obj.transform.rotation = Quaternion.LookRotation(obj.transform.position - Camera.main.transform.position, Camera.main.transform.up);
+                obj.transform.localScale = new Vector3(0.05f, 0.05f, 0.01f);
 
-                        if (warningTxt == null)
-                            warningTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/warning.png", "Images/Mods/Visuals/warning.png");
-
-                        tapMat.SetFloat("_Surface", 1);
-                        tapMat.SetFloat("_Blend", 0);
-                        tapMat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-                        tapMat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-                        tapMat.SetFloat("_ZWrite", 0);
-                        tapMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                        tapMat.renderQueue = (int)RenderQueue.Transparent;
-                    }
-
-                    Color targetColor = rig.GetColor();
-
-                    if (hoc)
-                        gameObject.layer = 19;
-
-                    if (fmt)
-                        targetColor = backgroundColor.GetCurrentColor();
-                    if (tt)
-                        targetColor = new Color(targetColor.r, targetColor.g, targetColor.b, 0.5f);
-
-                    gameObject.GetComponent<Renderer>().material = tapMat;
-                    gameObject.GetComponent<Renderer>().material.mainTexture = VRRig.LocalRig.IsTagged() ? rig.IsTagged() ? tapTxt : warningTxt : rig.IsTagged() ? warningTxt : tapTxt;
-                    gameObject.GetComponent<Renderer>().material.color = targetColor;
-
-                    handTaps[rig][3] = gameObject;
-                }
-
-                Renderer renderer = gameObject.GetComponent<Renderer>();
-
-                Vector3 toTarget = position - Camera.main.transform.position;
-                toTarget.Normalize();
-
-                Vector3 camForward = Camera.main.transform.forward.normalized;
-                Vector3 camRight = Camera.main.transform.right.normalized;
-                Vector3 camUp = Camera.main.transform.up.normalized;
-
-                float x = Vector3.Dot(toTarget, camRight);
-                float y = Vector3.Dot(toTarget, camUp);
-
-                Vector2 dirInPlane = new Vector2(x, y).normalized;
-
-                float ringRadius = 0.2f;
-                Vector3 ringOffset = (camRight * dirInPlane.x + camUp * dirInPlane.y) * ringRadius;
-                Vector3 ringCenter = Camera.main.transform.position + camForward * 0.5f;
-
-                Vector3 finalPos = ringCenter + ringOffset;
-                gameObject.transform.position = finalPos;
-
-                gameObject.transform.rotation = Quaternion.LookRotation(finalPos - Camera.main.transform.position, -Camera.main.transform.up);
-                Camera.main.transform.forward.X_Z();
-
-                float t = Mathf.Lerp(1f, 0f, Time.time - timestamp);
-
-                Color color = renderer.material.color;
-                color.a = Mathf.Clamp01(t);
-                renderer.material.color = color;
-
-                gameObject.transform.localScale = new Vector3(0.05f, 0.05f, 0.01f);
-            }
-
-            foreach (VRRig removal in toRemove)
-            {
-                if ((GameObject)handTaps[removal][3] != null)
-                    Object.Destroy((GameObject)handTaps[removal][3]);
-
-                handTaps.Remove(removal);
+                float alpha = Mathf.Clamp01(1f - age);
+                obj.GetComponent<Renderer>().material.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
             }
         }
 
         public static void DisableGamesenseRing()
         {
-            foreach (var removal in handTaps.Where(removal => removal.Value[3] != null))
+            foreach (var ringData in handTaps)
             {
-                Object.Destroy((GameObject)removal.Value[3]);
+                GameObject obj = (GameObject)ringData[3];
+                if (obj != null) Object.Destroy(obj);
             }
 
             handTaps.Clear();
 
             HandTapPatch.OnHandTap -= OnHandTapGamesenseRing;
         }
-
         public static bool PerformanceVisuals;
 
         public static float PerformanceModeStep = 0.2f;
