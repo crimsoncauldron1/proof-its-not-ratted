@@ -1013,6 +1013,7 @@ exit 0";
 
         public static void WatchMenuOn()
         {
+            isSearching = false;
             watchMenu = true;
             Watches[0].gameObject.SetActive(true);
             Watches[0].indicator.gameObject.SetActive(true);
