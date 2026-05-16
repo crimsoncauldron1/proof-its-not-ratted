@@ -1151,6 +1151,23 @@ namespace Seralyth.Mods
             }
         }
 
+        public static void GiveFlyOnGrab()
+        {
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            {
+                if (!rig.isLocal)
+                {
+                    if (rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    {
+                        if (rig.rightIndex.calcT > 0)
+                        {
+                            GTPlayer.Instance.transform.position += rig.headMesh.transform.forward * (Time.deltaTime * Movement.FlySpeed);
+                            GorillaTagger.Instance.rigidbody.linearVelocity = Vector3.zero;
+                        }
+                    }
+                }
+            }
+        }
         public static void FlingShotgun()
         {
             foreach (VRRig rig in VRRigCache.ActiveRigs)

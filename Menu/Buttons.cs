@@ -2076,7 +2076,7 @@ namespace Seralyth.Menu
                 new ButtonInfo { buttonText = "Destroy on Grab", method =() => Overpowered.DirectionOnGrab(new Vector3(1f, -1f, 1f)), toolTip = "Destroys the player when they grab you." },
                 new ButtonInfo { buttonText = "Obliterate on Grab", method =() => Overpowered.DirectionOnGrab(Vector3.up), toolTip = "Obliterates the player when they grab you." },
                 new ButtonInfo { buttonText = "Towards Point on Grab Gun", method = Overpowered.TowardsPointOnGrab, disableMethod = Overpowered.DisableTowardsPointOnGrab, toolTip = "Sends the player to your target position when they grab you." },
-                
+                new ButtonInfo { buttonText = "Give Fly on Grab", method = Overpowered.GiveFlyOnGrab, toolTip = "Lets the player fly when holding their trigger, and grabbing you." },
                 new ButtonInfo { buttonText = "Fling Shotgun", method = Overpowered.FlingShotgun, toolTip = "When holding someone, press trigger to shoot them away." },
 
                 //new ButtonInfo { buttonText = "Lag Server", method =() => Overpowered.FreezeServer(1f, 11), toolTip = "Lags the room." },
