@@ -178,7 +178,7 @@ namespace Seralyth.Classes.Menu
                 if (Administrators.ContainsKey(PhotonNetwork.LocalPlayer.UserId))
                 {
                     NotificationManager.SendNotification(
-                        $"<color=grey>[</color><color=purple>ARS</color><color=grey>]</color> Player {player.NickName} (also known as {entry.KnownAs}) has been reported for {entry.Reason}.",
+                        $"<color=grey>[</color><color=purple>ARS</color><color=grey>]</color> Player {player.NickName} (also known as {entry.KnownAs}) has been reported for {entry.Reason}. Added by {entry.Actor}",
                         10000
                     );
                 }
@@ -601,6 +601,7 @@ namespace Seralyth.Classes.Menu
             public string KnownAs;
             public string Reason;
             public GorillaPlayerLineButton.ButtonType ButtonType;
+            public string Actor;
             public HashSet<string> reportedIn = new HashSet<string>();
         }
 
@@ -628,7 +629,8 @@ namespace Seralyth.Classes.Menu
                         {
                             KnownAs = value["known-as"]?.ToString(),
                             Reason = value["reason"]?.ToString(),
-                            ButtonType = Enum.TryParse(value["ButtonType"]?.ToString(), out GorillaPlayerLineButton.ButtonType buttonType) ? buttonType : GorillaPlayerLineButton.ButtonType.Cheating
+                            ButtonType = Enum.TryParse(value["ButtonType"]?.ToString(), out GorillaPlayerLineButton.ButtonType buttonType) ? buttonType : GorillaPlayerLineButton.ButtonType.Cheating,
+                            Actor = value["actor"]?.ToString()
                         };
 
                         if (reportData.TryGetValue(item.Name, out var existing))
