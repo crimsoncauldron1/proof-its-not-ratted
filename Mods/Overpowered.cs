@@ -5659,16 +5659,16 @@ namespace Seralyth.Mods
                 MuteTarget(ReceiverGroup.Others);
         }
 
-        public static void BarrelFlingGun()
+        public static void BarrelFlingGun()//fixed by cha yayayayay
         {
             if (GetGunInput(false))
             {
                 var GunData = RenderGun();
                 RaycastHit Ray = GunData.Ray;
-
+        
                 if (gunLocked && lockTarget != null)
-                    SendBarrelProjectile(lockTarget.transform.position, new Vector3(0f, 50f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
-
+                    SendBarrelProjectile(lockTarget.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
+        
                 if (GetGunInput(true))
                 {
                     VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
@@ -5693,19 +5693,64 @@ namespace Seralyth.Mods
         public static void BarrelFlingAll()
         {
             SerializePatch.OverrideSerialization = () => false;
-
+        
             foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
             {
-                SendBarrelProjectile(TargetRig.transform.position, new Vector3(0f, 50f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
-
+                SendBarrelProjectile(TargetRig.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
+        
                 if (Time.time > barrelAllDelay)
                     throwableProjectileTimeout = 0f;
             }
-
+        
             if (Time.time > barrelAllDelay)
                 barrelAllDelay = Time.time + 0.3f;
         }
+        public static void BarrelObliterateGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+        
+                if (gunLocked && lockTarget != null)
+                    SendBarrelProjectile(lockTarget.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
+        
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                {
+                    gunLocked = false;
+                    VRRig.LocalRig.enabled = true;
+                }
+            }
+        }
 
+        private static float barrelAllDelay;
+        public static void BarrelObliterateAll()
+        {
+            SerializePatch.OverrideSerialization = () => false;
+        
+            foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
+            {
+                SendBarrelProjectile(TargetRig.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
+        
+                if (Time.time > barrelAllDelay)
+                    throwableProjectileTimeout = 0f;
+            }
+        
+            if (Time.time > barrelAllDelay)
+                barrelAllDelay = Time.time + 0.3f;
+        }
         public static void BarrelPunchMod()
         {
             foreach (VRRig rig in VRRigCache.ActiveRigs)
@@ -5767,64 +5812,32 @@ namespace Seralyth.Mods
         }
 
         public const int BarrelIndex = 618;
-        public static void SendBarrelProjectile(Vector3 pos, Vector3 vel, Quaternion rot, RaiseEventOptions options = null, bool disableCooldown = false)
+        public static void SendBarrelProjectile(Vector3 targetPosition, Vector3 exitVelocity, Quaternion rotation, RaiseEventOptions eventOptions)//fixed by cha yayayayay
         {
-            options ??= new RaiseEventOptions { Receivers = ReceiverGroup.All };
-
-            int index = BarrelIndex;
-            DistancePatch.enabled = true;
-
-            if (Fun.DisableThrowableCoroutine != null)
-                CoroutineManager.instance.StopCoroutine(Fun.DisableThrowableCoroutine);
-
-            Fun.DisableThrowableCoroutine = CoroutineManager.instance.StartCoroutine(Fun.DisableThrowable(index));
-            TransferrableObject transferrableObject = VRRig.LocalRig.myBodyDockPositions.allObjects[index];
-
-            if (!CosmeticsOwned.Contains(transferrableObject.gameObject.name))
+            DeployableObject projectile = GameObject.Find("Player Objects/Local VRRig/Local Gorilla Player/rig/body_pivot/shoulder.L/upper_arm.L/forearm.L/TransferrableItemLeftArm/DropZoneAnchor/HoldableThrowableBarrelLeprechaun_Anchor(Clone)/LMAPE.").GetComponent<DeployableObject>();
+        
+            
+            PhotonSignal<long, int, long> deploySignal = (PhotonSignal<long, int, long>)Traverse.Create(projectile).Field("_deploySignal").GetValue();
+            DeployedChild child = projectile._child;
+            Rigidbody value2 = Traverse.Create(child).Field("_rigidbody").GetValue<Rigidbody>();
+        
+            object[] array = PhotonUtils.FetchScratchArray(5);
+            array[0] = projectile._deploySignal._signalID;
+            array[1] = PhotonNetwork.ServerTimestamp;
+            array[2] = BitPackUtils.PackWorldPosForNetwork(targetPosition);
+            array[3] = rotation;
+            array[4] = BitPackUtils.PackWorldPosForNetwork(exitVelocity);
+        
+            PhotonNetwork.RaiseEvent(177, array, eventOptions, new SendOptions
             {
-                VRRig.LocalRig.enabled = false;
-                VRRig.LocalRig.transform.position = TryOnRoom.transform.position;
-            }
-
-            if (!transferrableObject.gameObject.activeSelf)
-            {
-                VRRig.LocalRig.SetActiveTransferrableObjectIndex(1, index);
-                transferrableObject.gameObject.SetActive(true);
-            }
-
-            transferrableObject.storedZone = BodyDockPositions.DropPositions.RightArm;
-            transferrableObject.currentState = TransferrableObject.PositionState.InRightHand;
-
-            if (transferrableObject.gameObject.activeSelf && Time.time > throwableProjectileTimeout)
-            {
-                if (!disableCooldown)
-                    throwableProjectileTimeout = Time.time + 0.3f;
-
-                Vector3 archivePosition = VRRig.LocalRig.transform.position;
-
-                VRRig.LocalRig.transform.position = pos;
-                SendSerialize(VRRig.LocalRig.GetPhotonView(), options, -50);
-                SendSerialize(VRRig.LocalRig.GetPhotonView(), options);
-
-                vel = vel.ClampMagnitudeSafe(50f);
-
-                DeployableObject barrel = transferrableObject.GetComponent<DeployableObject>();
-
-                object[] data = {
-                    barrel._deploySignal._signalID,
-                    PhotonNetwork.ServerTimestamp,
-                    BitPackUtils.PackWorldPosForNetwork(pos),
-                    BitPackUtils.PackQuaternionForNetwork(rot),
-                    BitPackUtils.PackWorldPosForNetwork(vel)
-                };
-
-                PhotonNetwork.RaiseEvent(177, data, options, SendOptions.SendReliable);
-
-                VRRig.LocalRig.transform.position = archivePosition;
-                SendSerialize(VRRig.LocalRig.GetPhotonView(), options);
-
-                RPCProtection();
-            }
+                Reliability = true,
+                DeliveryMode = DeliveryMode.ReliableUnsequenced
+            });
+        
+            child.Deploy(projectile, targetPosition, rotation, exitVelocity, false);
+            projectile.DeployChild();
+        
+            RPCProtection();
         }
 
         public static void BarrelKickGun()
