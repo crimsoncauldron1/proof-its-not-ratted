@@ -44,6 +44,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 using UnityEngine.XR;
 using Valve.Newtonsoft.Json.Linq;
 using static Seralyth.Menu.Main;
@@ -3693,19 +3694,29 @@ namespace Seralyth.Mods
         public static void Rotate(Quaternion rot) =>
             VRRig.LocalRig.transform.rotation = rot;
 
+        public static void RotateFBT(Quaternion rot)
+        {
+            VRRig rig = VRRig.LocalRig;
+            float scale = rig.lastScaleFactor;
+            Transform cam = Camera.main.transform;
+            rig.transform.rotation = rot;
+            rig.transform.position = cam.position
+                + rig.headConstraint.rotation * rig.head.trackingPositionOffset * scale
+                + rig.transform.rotation * rig.headBodyOffset * scale;
+        }
+
         public static void VRRigLateUpdate_Dinnerbone() =>
             VRRig.LocalRig.transform.RotateAround(VRRig.LocalRig.bodyTransform.position, Camera.main.transform.forward, 180f);
 
         public static void VRRigLateUpdate_SpazBody() => Rotate(Random.rotationUniform);
 
-        public static void VRRigLateUpdate_FakeFBT() // Thanks to Lexi for the proper way to do this
+        public static void VRRigLateUpdate_FakeFBT()
         {
             Rotate(Camera.main.transform.rotation);
-            VRRig.LocalRig.leftHand.rigTarget.transform.position = GTPlayer.Instance.LeftHand.handFollower.transform.position;
-            VRRig.LocalRig.leftHand.rigTarget.transform.rotation = GTPlayer.Instance.LeftHand.handFollower.transform.rotation;
-            VRRig.LocalRig.rightHand.rigTarget.transform.position = GTPlayer.Instance.RightHand.handFollower.transform.position;
-            VRRig.LocalRig.rightHand.rigTarget.transform.rotation = GTPlayer.Instance.RightHand.handFollower.transform.rotation;
-        } 
+            VRRig.LocalRig.head.MapMine(VRRig.LocalRig.lastScaleFactor, VRRig.LocalRig.playerOffsetTransform);
+            VRRig.LocalRig.leftHand.MapMine(VRRig.LocalRig.lastScaleFactor, VRRig.LocalRig.playerOffsetTransform);
+            VRRig.LocalRig.rightHand.MapMine(VRRig.LocalRig.lastScaleFactor, VRRig.LocalRig.playerOffsetTransform);
+        }
 
         private static Quaternion? vrrigJoystickRot;
 
@@ -3876,7 +3887,7 @@ namespace Seralyth.Mods
                 index++;
 
                 Vector3 they = vrrig.rightHandTransform.position;
-                Vector3 notthem = VRRig.LocalRig.head.rigTarget.position;
+                Vector3 notthem = VRRig.LocalRig.bodyTransform.position;
                 float distance = Vector3.Distance(they, notthem);
 
                 if (distance < 0.25f)

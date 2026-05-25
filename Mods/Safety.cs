@@ -20,6 +20,7 @@
  */
 
 using ExitGames.Client.Photon;
+using ExitGames.Client.Photon.StructWrapping;
 using GorillaLocomotion;
 using GorillaNetworking;
 using GorillaTagScripts;
@@ -147,7 +148,12 @@ namespace Seralyth.Mods
         }
 
         public static void SpoofSupportPage() =>
-            GorillaComputer.instance.screenText.Set(GorillaComputer.instance.screenText.currentText.Replace("STEAM", "QUEST").Replace(GorillaComputer.instance.buildDate, "05/30/2024 16:50:12\nBUILD CODE 4893\nMANAGED ACCOUNT: NO"));
+            GorillaComputer.instance.screenText.Set(
+                GorillaComputer.instance.screenText.stringBuilder.ToString()
+                    .Replace("STEAM", "QUEST")
+                    .Replace(GorillaComputer.instance.buildDate,
+                        $"{GorillaComputer.instance.buildDate}\nBUILD CODE 4893\nMANAGED ACCOUNT: NO")
+            );
 
         private static string previousNickName;
         public static void AntiNameBan()

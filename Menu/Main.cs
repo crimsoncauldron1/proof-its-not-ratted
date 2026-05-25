@@ -7056,8 +7056,8 @@ jgs \_   _/ |Oo\
                     text.SafeSetFont(activeFont);
                 if (text.fontStyle != activeFontStyle)
                     text.SafeSetFontStyle(activeFontStyle);
-                if (renderer.material != CustomBoardManager.BoardMaterial)
-                    renderer.material = CustomBoardManager.BoardMaterial;
+                if (renderer.sharedMaterial != CustomBoardManager.BoardMaterial)
+                    renderer.sharedMaterial = CustomBoardManager.BoardMaterial;
             }
         }
 

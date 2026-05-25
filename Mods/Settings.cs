@@ -589,13 +589,13 @@ namespace Seralyth.Mods
                 new ButtonInfo {
                     buttonText = "Guardian Bring Player",
                     overlapText = $"Guardian Bring {targetName}",
-                    method =() => Overpowered.BringPlayer(player),
+                    method =() => Overpowered.GuardianBringPlayer(player),
                     toolTip = $"Brings {targetName} to you."
                 },
                 new ButtonInfo {
                     buttonText = "Guardian Bring Player Gun",
                     overlapText = $"Guardian Bring {targetName} Gun",
-                    method =() => Overpowered.BringPlayerGun(player),
+                    method =() => Overpowered.GuardianBringPlayerGun(player),
                     toolTip = $"Brings {targetName} to wherever your hand desires."
                 },
                 new ButtonInfo {
@@ -607,13 +607,13 @@ namespace Seralyth.Mods
                 new ButtonInfo {
                     buttonText = "Guardian Obliterate Player",
                     overlapText = $"Guardian Obliterate {targetName}",
-                    method =() => Overpowered.ObliteratePlayer(player),
+                    method =() => Overpowered.GuardianObliteratePlayer(player),
                     toolTip = $"Obliterates {targetName}."
                 },
                 new ButtonInfo {
                     buttonText = "Guardian Crash Player",
                     overlapText = $"Guardian Crash {targetName}",
-                    method =() => Overpowered.CrashPlayer(player),
+                    method =() => Overpowered.GuardianCrashPlayer(player),
                     toolTip = $"Crashes {targetName}."
                 }
             };

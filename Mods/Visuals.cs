@@ -3846,6 +3846,74 @@ namespace Seralyth.Mods
             voiceIndicators.Clear();
         }
 
+        private static readonly Dictionary<VRRig, GameObject> gripIndicators = new Dictionary<VRRig, GameObject>();
+        private static Material gripEspMat;
+        private static Texture2D gripTxt;
+        public static void GripESP()
+        {
+            List<KeyValuePair<VRRig, GameObject>> indicatorCopy = gripIndicators.ToList();
+            foreach (var nametag in indicatorCopy.Where(nametag => !VRRigCache.ActiveRigs.Contains(nametag.Key)))
+            {
+                Object.Destroy(nametag.Value);
+                voiceIndicators.Remove(nametag.Key);
+            }
+
+            foreach (VRRig vrrig in VRRigCache.ActiveRigs)
+            {
+                if (!vrrig.IsLocal())
+                {
+                    if (vrrig.IsLeftHandGrabbable() || vrrig.IsRightHandGrabbable())
+                    {
+                        if (!gripIndicators.TryGetValue(vrrig, out GameObject gripIcon))
+                        {
+                            gripIcon = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                            Object.Destroy(gripIcon.GetComponent<Collider>());
+
+                            if (gripEspMat == null)
+                                gripEspMat = new Material(Shader.Find("Sprites/Default"));
+
+                            if (nameTagChams)
+                            {
+                                gripEspMat.SetInt("_SrcBlend", (int)BlendMode.One);
+                                gripEspMat.SetInt("_DstBlend", (int)BlendMode.Zero);
+                                gripEspMat.SetInt("_ZWrite", 0);
+                                gripEspMat.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                                gripEspMat.renderQueue = (int)RenderQueue.Overlay;
+                            }
+
+                            if (gripTxt == null)
+                                gripTxt = LoadTextureFromURL($"{PluginInfo.ServerResourcePath}/Images/Mods/Visuals/grip.png", $"Images/Mods/Visuals/grip.png");
+
+                            gripEspMat.mainTexture = gripTxt;
+
+                            gripIcon.GetComponent<Renderer>().material = gripEspMat;
+                            gripIndicators.Add(vrrig, gripIcon);
+                        }
+
+                        gripIcon.GetComponent<Renderer>().material.color = vrrig.GetColor();
+                        gripIcon.transform.localScale = new Vector3(0.5f, 0.5f, 0.01f) * vrrig.scaleFactor;
+                        gripIcon.transform.position = GetNameTagPosition(vrrig);
+                        gripIcon.transform.LookAt(GorillaTagger.Instance.headCollider.transform.position);
+                    }
+                    else
+                    {
+                        if (gripIndicators.TryGetValue(vrrig, out GameObject existing))
+                        {
+                            Object.Destroy(existing);
+                            gripIndicators.Remove(vrrig);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void DisableGripESP()
+        {
+            foreach (KeyValuePair<VRRig, GameObject> nametag in gripIndicators)
+                Object.Destroy(nametag.Value);
+            gripIndicators.Clear();
+        }
+
         private static GameObject l;
         private static GameObject r;
 

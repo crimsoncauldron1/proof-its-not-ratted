@@ -515,7 +515,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void CrashPlayer(NetPlayer target)
+        public static void GuardianCrashPlayer(NetPlayer target)
         {
             VRRig rig = GetVRRigFromPlayer(target);
             if (Time.time > crashAllDelay && rig.transform.position.x < -5)
@@ -1096,7 +1096,7 @@ namespace Seralyth.Mods
             };
         }
 
-        public static void ObliteratePlayer(NetPlayer target)
+        public static void GuardianObliteratePlayer(NetPlayer target)
         {
             if (Time.time > crashAllDelay)
             {
@@ -1171,97 +1171,115 @@ namespace Seralyth.Mods
         }
         public static void FlingShotgun()
         {
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            if (VRRig.LocalRig.leftHandLink.IsLinkActive() || VRRig.LocalRig.rightHandLink.IsLinkActive())
             {
-                if (!rig.isLocal)
-                {
-                    if (rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    {
-                        bool grabbedByLeft = VRRig.LocalRig.leftHandLink.grabbedPlayer == rig.GetPlayer();
-                        if (grabbedByLeft ? leftTriggerPressed : rightTriggerPressed)
-                        {
-                            VRRig.LocalRig.enabled = false;
-                            VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position + GetGunDirection(grabbedByLeft ? GorillaTagger.Instance.leftHandTransform : GorillaTagger.Instance.rightHandTransform) * ShootStrength;
-                        }
-                    }
-                    else
-                        VRRig.LocalRig.enabled = true;
-                }
+                bool left = VRRig.LocalRig.leftHandLink.IsLinkActive();
+                if (left ? leftTriggerPressed : rightTriggerPressed)
+                    VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position + GetGunDirection(left ? GorillaTagger.Instance.leftHandTransform : GorillaTagger.Instance.rightHandTransform) * ShootStrength;
             }
         }
 
         public static void ForceGrab()
         {
-            VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            if (Time.time > grabDelay)
             {
-                if (rig.IsLocal()) continue;
-                if ((rig.leftMiddle.calcT > 0.8f && rig.leftHandLink.grabbedPlayer == null) || (rig.rightMiddle.calcT > 0.8f && rig.rightHandLink.grabbedPlayer == null))
+                foreach (VRRig rig in VRRigCache.ActiveRigs)
                 {
-                    bool isLeftHand = rig.leftMiddle.calcT > 0.8f;
+                    if (rig.IsLocal()) continue;
 
-                    VRRig.LocalRig.enabled = false;
-                    VRRig.LocalRig.transform.position = rig.transform.position - Vector3.up * 0.5f;
-                    VRRig.LocalRig.transform.rotation = Quaternion.identity;
+                        if ((rig.leftMiddle.calcT > 0.8f && rig.leftHandLink.grabbedPlayer == null) || (rig.rightMiddle.calcT > 0.8f && rig.rightHandLink.grabbedPlayer == null))
+                        {
+                            bool isLeftHand = rig.leftMiddle.calcT > 0.8f;
+                            /* old code
+                       VRRig.LocalRig.enabled = false;
+                       VRRig.LocalRig.transform.position = rig.transform.position - Vector3.up * 0.5f;
+                       VRRig.LocalRig.transform.rotation = Quaternion.identity;
 
-                    VRMap targetHand = isLeftHand ? VRRig.LocalRig.leftHand : VRRig.LocalRig.rightHand;
-                    targetHand.rigTarget.transform.position = isLeftHand ? rig.leftHandTransform.position : rig.rightHandTransform.position;
-                    targetHand.rigTarget.transform.rotation = isLeftHand ? rig.leftHandTransform.rotation : rig.rightHandTransform.rotation;
+                       VRMap targetHand = isLeftHand ? VRRig.LocalRig.leftHand : VRRig.LocalRig.rightHand;
+                       targetHand.rigTarget.transform.position = isLeftHand ? rig.leftHandTransform.position : rig.rightHandTransform.position;
+                       targetHand.rigTarget.transform.rotation = isLeftHand ? rig.leftHandTransform.rotation : rig.rightHandTransform.rotation;
 
-                    VRRig.LocalRig.leftIndex.calcT = 1f;
-                    VRRig.LocalRig.leftMiddle.calcT = 1f;
-                    VRRig.LocalRig.leftThumb.calcT = 1f;
+                       VRRig.LocalRig.leftIndex.calcT = 1f;
+                       VRRig.LocalRig.leftMiddle.calcT = 1f;
+                       VRRig.LocalRig.leftThumb.calcT = 1f;
 
-                    VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
+                       VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
+                       VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
+                       VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
 
-                    VRRig.LocalRig.rightIndex.calcT = 1f;
-                    VRRig.LocalRig.rightMiddle.calcT = 1f;
-                    VRRig.LocalRig.rightThumb.calcT = 1f;
+                       VRRig.LocalRig.rightIndex.calcT = 1f;
+                       VRRig.LocalRig.rightMiddle.calcT = 1f;
+                       VRRig.LocalRig.rightThumb.calcT = 1f;
 
-                    VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                    VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                       VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
+                       VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
+                       VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
+                       */
+                            TakeMyHand_HandLink link = isLeftHand ? VRRig.LocalRig.leftHandLink : VRRig.LocalRig.rightHandLink;
+                            link.IsTentacleGrab = true;
+                            link.LocalCreateLink(isLeftHand ? rig.leftHandLink : rig.rightHandLink);
+                            SendSerialize(VRRig.LocalRig.GetPhotonView(), new RaiseEventOptions { TargetActors = new[] { rig.GetPlayer().ActorNumber } });
+                            break;
+                        }
+                    }
+                grabDelay = Time.time + 0.6f;
+            }
+        }
 
-                    TakeMyHand_HandLink link = isLeftHand ? VRRig.LocalRig.leftHandLink : VRRig.LocalRig.rightHandLink;
-                    link.LocalCreateLink(isLeftHand ? rig.leftHandLink : rig.rightHandLink); // recheck kingofnetflix
+        public static bool ForceGrab(VRRig rig, bool disableRigOnceDone = true)
+        {
+            if (rig.IsLocal()) return false;
 
-                    break;
+            bool isLeftHand = rig.IsLeftHandGrabbable();
+            bool isRightHand = rig.IsRightHandGrabbable();
+
+            if (!isLeftHand && !isRightHand) return false;
+
+            var localLink = isLeftHand ? VRRig.LocalRig.leftHandLink : VRRig.LocalRig.rightHandLink;
+            var remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
+            if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+            {
+                if (!VRRig.LocalRig.enabled && disableRigOnceDone)
+                    VRRig.LocalRig.enabled = true;
+                return true;
+            } else if (remoteLink.grabbedPlayer != NetworkSystem.Instance.LocalPlayer)
+            {
+                VRRig.LocalRig.transform.position = rig.syncPos;
+                /* old code
+                VRRig.LocalRig.transform.position = rig.syncPos;
+                if (isLeftHand)
+                    VRRig.LocalRig.leftHand.rigTarget.position = rig.leftHand.rigTarget.position;
+                else
+                    VRRig.LocalRig.rightHand.rigTarget.position = rig.rightHand.rigTarget.position;
+                */
+                if (Time.time > grabDelay && (isLeftHand || isRightHand))
+                {
+                    localLink.IsTentacleGrab = true;
+                    localLink.LocalCreateLink(remoteLink);
+                    SendSerialize(VRRig.LocalRig.GetPhotonView(), new RaiseEventOptions { TargetActors = new[] { rig.GetPlayer().ActorNumber } });
+                    grabDelay = Time.time + 0.6f;
                 }
             }
+            VRRig.LocalRig.enabled = true;
+            return false;
         }
 
         public static void TowardsPositionOnGrab(Vector3 position)
         {
-            VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
-            {
-                if (!rig.isLocal) /*&& rig.transform.position.x < 80)*/
-                {
-                    if (rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    {
-                        VRRig.LocalRig.enabled = false;
-                        VRRig.LocalRig.transform.position = position;
-                    }
-                }
-            }
+            if (VRRig.LocalRig.leftHandLink.IsLinkActive() || VRRig.LocalRig.rightHandLink.IsLinkActive())
+                VRRig.LocalRig.transform.position = position;
         }
 
         public static void FlingOnGrab()
         {
-            VRRig.LocalRig.enabled = true;
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            if (VRRig.LocalRig.leftHandLink.IsLinkActive() || VRRig.LocalRig.rightHandLink.IsLinkActive())
             {
-                if (!rig.isLocal) /*&& rig.transform.position.x < 80)*/
-                {
-                    if (rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    {
-                        Vector3 velocity = (Vector3.up + GorillaTagger.Instance.bodyCollider.transform.forward * 1).normalized * 3f;
-                        rig.GetNetView().SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
-                    }
-                }
+                VRRig rig = VRRig.LocalRig.leftHandLink.grabbedPlayer.VRRig() ?? VRRig.LocalRig.rightHandLink.grabbedPlayer.VRRig();
+                Vector3 velocity = (Vector3.up + GorillaTagger.Instance.bodyCollider.transform.forward * 1).normalized * 3f;
+                rig.GetNetView().SendRPC("DroppedByPlayer", GetPlayerFromVRRig(rig), velocity);
             }
+            else
+                VRRig.LocalRig.enabled = true;
         }
 
         private static float propHuntSpazDelay;
@@ -3202,7 +3220,7 @@ namespace Seralyth.Mods
         }
 
         private static float grabDelay;
-        public static void GrabGun()
+        public static void GuardianGrabGun()
         {
             if (GetGunInput(false))
             {
@@ -3228,7 +3246,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void GrabAll()
+        public static void GuardianGrabAll()
         {
             if (rightGrab && Time.time > grabDelay)
             {
@@ -3248,7 +3266,7 @@ namespace Seralyth.Mods
         }
 
         private static float releaseDelay;
-        public static void ReleaseGun()
+        public static void GuardianReleaseGun()
         {
             if (GetGunInput(false))
             {
@@ -3275,7 +3293,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void ReleaseAll()
+        public static void GuardianReleaseAll()
         {
             if (rightTrigger > 0.5f && Time.time > releaseDelay)
             {
@@ -3295,7 +3313,7 @@ namespace Seralyth.Mods
         }
 
         private static float flingDelay;
-        public static void FlingGun()
+        public static void GuardianFlingGun()
         {
             if (GetGunInput(false))
             {
@@ -3315,7 +3333,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void FlingAll()
+        public static void GuardianFlingAll()
         {
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
@@ -3326,7 +3344,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void SpazPlayerGun()
+        public static void GuardianSpazPlayerGun()
         {
             if (GetGunInput(false))
             {
@@ -3359,7 +3377,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void SpazAllPlayers()
+        public static void GuardianSpazAllPlayers()
         {
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
@@ -4798,7 +4816,7 @@ namespace Seralyth.Mods
             return false;
         }
 
-        public static void PhysicalFreezeGun()
+        public static void GuardianPhysicalFreezeGun()
         {
             if (GetGunInput(false))
             {
@@ -4831,7 +4849,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void PhysicalFreezeAll()
+        public static void GuardianPhysicalFreezeAll()
         {
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
@@ -4841,7 +4859,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringPlayer(NetPlayer player)
+        public static void GuardianBringPlayer(NetPlayer player)
         {
             if (Time.time > flingDelay)
             {
@@ -4851,7 +4869,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringPlayerGun(NetPlayer player)
+        public static void GuardianBringPlayerGun(NetPlayer player)
         {
             if (GetGunInput(false))
             {
@@ -4870,7 +4888,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringGun()
+        public static void GuardianBringGun()
         {
             if (GetGunInput(false))
             {
@@ -4903,7 +4921,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringAll()
+        public static void GuardianBringAll()
         {
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
@@ -4916,7 +4934,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringAwayGun()
+        public static void GuardianBringAwayGun()
         {
             if (GetGunInput(false))
             {
@@ -4949,7 +4967,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringAwayAll()
+        public static void GuardianBringAwayAll()
         {
             if (rightTrigger > 0.5f && Time.time > flingDelay)
             {
@@ -4962,7 +4980,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void OrbitAll()
+        public static void GuardianOrbitAll()
         {
             float scale = 5f;
             if (rightTrigger > 0.5f && Time.time > flingDelay)
@@ -4984,7 +5002,7 @@ namespace Seralyth.Mods
         }
 
         private static float thingdeb;
-        public static void GiveFlyGun()
+        public static void GuardianGiveFlyGun()
         {
             if (GetGunInput(false))
             {
@@ -5020,7 +5038,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void GiveFlyAll()
+        public static void GuardianGiveFlyAll()
         {
             if (Time.time > thingdeb)
             {
@@ -5033,7 +5051,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void PunchMod()
+        public static void GuardianPunchMod()
         {
             if (Time.time > thingdeb)
             {
@@ -5066,7 +5084,7 @@ namespace Seralyth.Mods
             boxingDelay.Add(rig, SnowballSpawnDelay);
         }
 
-        public static void Boxing()
+        public static void GuardianBoxing()
         {
             foreach (VRRig rig1 in VRRigCache.ActiveRigs)
             {
@@ -5081,7 +5099,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringAllGun()
+        public static void GuardianBringAllGun()
         {
             if (GetGunInput(false))
             {
@@ -5102,7 +5120,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void BringAwayAllGun()
+        public static void GuardianBringAwayAllGun()
         {
             if (GetGunInput(false))
             {
@@ -5123,7 +5141,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void AntiStump()
+        public static void GuardianAntiStump()
         {
             if (Time.time > flingDelay)
             {
@@ -5144,7 +5162,7 @@ namespace Seralyth.Mods
 
         private static float slamDel;
         private static bool flip;
-        public static void EffectSpamHands()
+        public static void GuardianEffectSpamHands()
         {
             if (rightGrab)
             {
@@ -5182,7 +5200,7 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void EffectSpamGun()
+        public static void GuardianEffectSpamGun()
         {
             if (GetGunInput(false))
             {
@@ -5210,9 +5228,9 @@ namespace Seralyth.Mods
             }
         }
 
-        private static float freezeAllDelay;
-        public static bool muteOnFreeze;
-        public static bool acklowledgeFreeze;
+        //private static float freezeAllDelay;
+        //public static bool muteOnFreeze;
+        //public static bool acklowledgeFreeze;
         public static void FreezeServer(float delay = 1f, int eventCount = 11, RaiseEventOptions options = null)
         {
             return;
@@ -5466,7 +5484,7 @@ namespace Seralyth.Mods
 
             lagDebounce = Time.time + lagDelay;
 
-            byte eventIndex = 204;
+            byte eventIndex = 186;
             object data = new object[] { float.NaN };
             SendOptions sendOptions = new SendOptions
             {
@@ -5500,6 +5518,203 @@ namespace Seralyth.Mods
                 PhotonNetwork.NetworkingClient.OpRaiseEvent(eventIndex, data, raiseEventOptions, sendOptions);
 
             RPCProtection();
+        }
+
+        private static float crashDelay;
+
+        public static void ForceGrabGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                    ForceGrab(lockTarget);
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                    gunLocked = false;
+            }
+        }
+
+        public static void FlingGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                {
+                    if (ForceGrab(lockTarget))
+                        VRRig.LocalRig.transform.position = new Vector3(Random.value * 1000f, Random.value * 1000f, Random.value * 1000f);
+                }
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                    gunLocked = false;
+            }
+        }
+
+        public static void FlingAll()
+        {
+            ForceGrab();
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            {
+                bool isLeftHand = rig.IsLeftHandGrabbable();
+                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
+                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    VRRig.LocalRig.transform.position = new Vector3(Random.value * 1000f, Random.value * 1000f, Random.value * 1000f);
+            }
+        }
+
+        public static void BringPlayerGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                {
+                    if (ForceGrab(lockTarget))
+                        VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f;
+                }
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                    gunLocked = false;
+            } 
+        }
+
+        public static void BringAllPlayers()
+        {
+            ForceGrab();
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            {
+                bool isLeftHand = rig.IsLeftHandGrabbable();
+                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
+                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f;
+            }
+        }
+
+        public static void PushPlayerGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                {
+                    if (ForceGrab(lockTarget))
+                        VRRig.LocalRig.transform.position = lockTarget.transform.position - lockTarget.transform.forward * 10f;
+                }
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                    gunLocked = false;
+            }
+        }
+
+        public static void PushAllPlayers()
+        {
+            ForceGrab();
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            {
+                bool isLeftHand = rig.IsLeftHandGrabbable();
+                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
+                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    VRRig.LocalRig.transform.position = rig.transform.position - rig.transform.forward * 10f;
+            }
+        }
+
+        public static void CrashGun()
+        {
+            if (GetGunInput(false))
+            {
+                var GunData = RenderGun();
+                RaycastHit Ray = GunData.Ray;
+
+                if (gunLocked && lockTarget != null)
+                {
+                    if (ForceGrab(lockTarget))
+                        VRRig.LocalRig.transform.position += new Vector3(10000, 10000, 10000);
+                }
+
+                if (GetGunInput(true))
+                {
+                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
+                    if (gunTarget && !gunTarget.IsLocal())
+                    {
+                        gunLocked = true;
+                        lockTarget = gunTarget;
+                    }
+                }
+            }
+            else
+            {
+                if (gunLocked)
+                    gunLocked = false;
+            }
+        }
+
+        public static void CrashAll()
+        {
+            ForceGrab();
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+            {
+                bool isLeftHand = rig.IsLeftHandGrabbable();
+                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
+                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+                    VRRig.LocalRig.transform.position += new Vector3(10000, 10000, 10000);
+            }
         }
 
         public static void LagGun()
@@ -5589,7 +5804,7 @@ namespace Seralyth.Mods
             Dictionary<byte, object> voiceData = new Dictionary<byte, object>
             {
                 { 1, 255 },
-                { 2, 48000 },
+                { 2, VoiceManager.Get().SamplingRate },
                 { 3, 2 },
                 { 4, 20000 },
                 { 5, 30000 },
@@ -5983,43 +6198,7 @@ namespace Seralyth.Mods
             return modded;
         }
 
-        public static float del;
-
-        public static void ModdedCrashGun()
-        {
-            if (GetGunInput(false))
-            {
-                var GunData = RenderGun();
-                RaycastHit Ray = GunData.Ray;
-
-                if (gunLocked && lockTarget != null)
-                {
-                    if (!IsModded(true)) return;
-                    if (Time.time > del)
-                    {
-                        PhotonNetwork.SetMasterClient(lockTarget.GetPhotonPlayer());
-                        PhotonNetwork.SetMasterClient(PhotonNetwork.LocalPlayer);
-                        del = Time.time + 0.02f;
-                    }
-                    RPCProtection();
-                }
-
-                if (GetGunInput(true))
-                {
-                    VRRig gunTarget = Ray.collider.GetComponentInParent<VRRig>();
-                    if (gunTarget && !gunTarget.IsLocal())
-                    {
-                        gunLocked = true;
-                        lockTarget = gunTarget;
-                    }
-                }
-            }
-            else
-            {
-                if (gunLocked)
-                    gunLocked = false;
-            }
-        }
+        public static float delay;
 
         public static void BetaNearbyFollowCommand(GorillaFriendCollider friendCollider, Player player)
         {

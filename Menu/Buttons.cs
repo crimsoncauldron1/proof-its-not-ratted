@@ -543,7 +543,7 @@ namespace Seralyth.Menu
             new[] { // Safety Mods [8]
                 new ButtonInfo { buttonText = "Exit Safety Mods", method =() => CurrentCategoryName = "Main", isTogglable = false, toolTip = "Returns you back to the main page.", legal = true},
 
-                new ButtonInfo { buttonText = "No Finger Movement", aliases = new[] { "Disable Fingers" }, method = Safety.NoFinger, toolTip = "Makes your fingers not move, so you can use wall walk without getting called out." },
+                new ButtonInfo { buttonText = "No Finger Movement", aliases = new[] { "Disable Fingers" }, postMethod = Safety.NoFinger, toolTip = "Makes your fingers not move, so you can use wall walk without getting called out." },
 
                 new ButtonInfo { buttonText = "Fake Oculus Menu <color=grey>[</color><color=green>X</color><color=grey>]</color>", method = Safety.FakeOculusMenu, toolTip = "Imitates opening your Oculus menu when holding <color=green>X</color>."},
                 new ButtonInfo { buttonText = "Fake Report Menu <color=grey>[</color><color=green>Y</color><color=grey>]</color>", method = Safety.FakeReportMenu, toolTip = "Imitates opening the report menu when holding <color=green>Y</color>."},
@@ -966,8 +966,9 @@ namespace Seralyth.Menu
 
                 new ButtonInfo { buttonText = "Cosmetic ESP", method = Visuals.CosmeticESP, disableMethod = Visuals.DisableCosmeticESP, toolTip = "Shows icons above people's heads if they are a Finger Painter, Illustrator, Administrator, Stick, Forest Guide, or Another Axiom Creator."},
 
-                new ButtonInfo { buttonText = "Voice Indicators", method = Visuals.VoiceIndicators, disableMethod = Visuals.DisableVoiceIndicators, toolTip = "Puts voice indicators above people's heads when they're talking.", legal = true},
-                new ButtonInfo { buttonText = "Voice ESP", method = Visuals.VoiceESP, disableMethod = Visuals.DisableVoiceIndicators, toolTip = "Puts voice indicators above people's heads when they're talking, but now they go through walls."},
+                new ButtonInfo { buttonText = "Voice ESP", method = Visuals.VoiceESP, disableMethod = Visuals.DisableVoiceIndicators, toolTip = "Puts voice indicators above people's heads when they're talking.", legal = true},
+
+                new ButtonInfo { buttonText = "Grabbable Indicators", method = Visuals.GripESP, disableMethod = Visuals.DisableGripESP, toolTip = "Puts indicators above people's heads when they can be grabbed."},
 
                 new ButtonInfo { buttonText = "Platform Indicators", method = Visuals.PlatformIndicators, disableMethod = Visuals.DisablePlatformIndicators, toolTip = "Puts indicators above people's heads that show what platform they are playing on."},
                 new ButtonInfo { buttonText = "Platform ESP", method = Visuals.PlatformESP, disableMethod = Visuals.DisablePlatformIndicators, toolTip = "Puts indicators above people's heads that show what platform they are playing on, but now they go through walls."},
@@ -2022,43 +2023,43 @@ namespace Seralyth.Menu
                 new ButtonInfo { buttonText = "Always Guardian", method = Overpowered.AlwaysGuardian, disableMethod = Movement.EnableRig, toolTip = "Makes you always the guardian."},
                 new ButtonInfo { buttonText = "Guardian Protector", method = Overpowered.GuardianProtector, toolTip = "Pushes people away from the guardian moon if they try to approach it."},
 
-                new ButtonInfo { buttonText = "Guardian Grab Gun", method = Overpowered.GrabGun, toolTip = "Grabs whoever your hand desires if you're the guardian."},
-                new ButtonInfo { buttonText = "Guardian Grab All <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Overpowered.GrabAll, toolTip = "Grabs everyone in the room if you're the guardian."},
+                new ButtonInfo { buttonText = "Guardian Grab Gun", method = Overpowered.GuardianGrabGun, toolTip = "Grabs whoever your hand desires if you're the guardian."},
+                new ButtonInfo { buttonText = "Guardian Grab All <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Overpowered.GuardianGrabAll, toolTip = "Grabs everyone in the room if you're the guardian."},
 
-                new ButtonInfo { buttonText = "Guardian Release Gun", method = Overpowered.ReleaseGun, toolTip = "Releases whoever your hand desires if you're the guardian."},
-                new ButtonInfo { buttonText = "Guardian Release All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.ReleaseAll, toolTip = "Releases everyone in the room if you're the guardian."},
+                new ButtonInfo { buttonText = "Guardian Release Gun", method = Overpowered.GuardianReleaseGun, toolTip = "Releases whoever your hand desires if you're the guardian."},
+                new ButtonInfo { buttonText = "Guardian Release All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianReleaseAll, toolTip = "Releases everyone in the room if you're the guardian."},
 
-                new ButtonInfo { buttonText = "Guardian Fling Gun", method = Overpowered.FlingGun, toolTip = "Flings whoever your hand desires."},
-                new ButtonInfo { buttonText = "Guardian Fling All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.FlingAll, toolTip = "Flings everyone in the room."},
+                new ButtonInfo { buttonText = "Guardian Fling Gun", method = Overpowered.GuardianFlingGun, toolTip = "Flings whoever your hand desires."},
+                new ButtonInfo { buttonText = "Guardian Fling All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianFlingAll, toolTip = "Flings everyone in the room."},
 
-                new ButtonInfo { buttonText = "Guardian Bring Gun", method = Overpowered.BringGun, toolTip = "Brings whoever your hand desires towards you."},
-                new ButtonInfo { buttonText = "Guardian Bring All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.BringAll, toolTip = "Brings everyone in the room towards you."},
+                new ButtonInfo { buttonText = "Guardian Bring Gun", method = Overpowered.GuardianBringGun, toolTip = "Brings whoever your hand desires towards you."},
+                new ButtonInfo { buttonText = "Guardian Bring All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianBringAll, toolTip = "Brings everyone in the room towards you."},
 
-                new ButtonInfo { buttonText = "Guardian Bring All Gun", method = Overpowered.BringAllGun, toolTip = "Brings everyone in the room towards wherever your hand desires."},
+                new ButtonInfo { buttonText = "Guardian Bring All Gun", method = Overpowered.GuardianBringAllGun, toolTip = "Brings everyone in the room towards wherever your hand desires."},
 
-                new ButtonInfo { buttonText = "Guardian Bring Away Gun", method = Overpowered.BringAwayGun, toolTip = "Brings whoever your hand desires towards you."},
-                new ButtonInfo { buttonText = "Guardian Bring Away All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.BringAwayAll, toolTip = "Brings everyone in the room towards you."},
+                new ButtonInfo { buttonText = "Guardian Bring Away Gun", method = Overpowered.GuardianBringAwayGun, toolTip = "Brings whoever your hand desires towards you."},
+                new ButtonInfo { buttonText = "Guardian Bring Away All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianBringAwayAll, toolTip = "Brings everyone in the room towards you."},
 
-                new ButtonInfo { buttonText = "Bring Away All Gun", method = Overpowered.BringAwayAllGun, toolTip = "Brings everyone in the room towards wherever your hand desires."},
+                new ButtonInfo { buttonText = "Bring Away All Gun", method = Overpowered.GuardianBringAwayAllGun, toolTip = "Brings everyone in the room towards wherever your hand desires."},
 
-                new ButtonInfo { buttonText = "Guardian Anti Stump", method = Overpowered.AntiStump, toolTip = "Anyone who gets too close to the stump entrance will be launched away."},
+                new ButtonInfo { buttonText = "Guardian Anti Stump", method = Overpowered.GuardianAntiStump, toolTip = "Anyone who gets too close to the stump entrance will be launched away."},
 
-                new ButtonInfo { buttonText = "Guardian Orbit All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.OrbitAll, toolTip = "Orbits everyone in the room around you."},
+                new ButtonInfo { buttonText = "Guardian Orbit All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianOrbitAll, toolTip = "Orbits everyone in the room around you."},
 
-                new ButtonInfo { buttonText = "Guardian Punch Mod", method = Overpowered.PunchMod, toolTip = "Flings people when you punch them."},
-                new ButtonInfo { buttonText = "Guardian Boxing", method = Overpowered.Boxing, toolTip = "Lets everyone in the room punch eachother."},
+                new ButtonInfo { buttonText = "Guardian Punch Mod", method = Overpowered.GuardianPunchMod, toolTip = "Flings people when you punch them."},
+                new ButtonInfo { buttonText = "Guardian Boxing", method = Overpowered.GuardianBoxing, toolTip = "Lets everyone in the room punch eachother."},
 
-                new ButtonInfo { buttonText = "Guardian Give Fly Gun", method = Overpowered.GiveFlyGun, toolTip = "Gives whoever you want fly when they hold their right thumb down."},
-                new ButtonInfo { buttonText = "Guardian Give Fly All", method = Overpowered.GiveFlyAll, toolTip = "Gives everyone in the room fly when they hold their right thumb down."},
+                new ButtonInfo { buttonText = "Guardian Give Fly Gun", method = Overpowered.GuardianGiveFlyGun, toolTip = "Gives whoever you want fly when they hold their right thumb down."},
+                new ButtonInfo { buttonText = "Guardian Give Fly All", method = Overpowered.GuardianGiveFlyAll, toolTip = "Gives everyone in the room fly when they hold their right thumb down."},
 
-                new ButtonInfo { buttonText = "Guardian Spaz Player Gun", method = Overpowered.SpazPlayerGun, toolTip = "Spazzes out whoever your hand desires."},
-                new ButtonInfo { buttonText = "Guardian Spaz All Players <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.SpazAllPlayers, toolTip = "Spazzes out everyone in the room."},
+                new ButtonInfo { buttonText = "Guardian Spaz Player Gun", method = Overpowered.GuardianSpazPlayerGun, toolTip = "Spazzes out whoever your hand desires."},
+                new ButtonInfo { buttonText = "Guardian Spaz All Players <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianSpazAllPlayers, toolTip = "Spazzes out everyone in the room."},
 
-                new ButtonInfo { buttonText = "Guardian Effect Spam Hands <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Overpowered.EffectSpamHands, toolTip = "Spawns effects when holding <color=green>grip</color>."},
-                new ButtonInfo { buttonText = "Effect Spam Gun", method = Overpowered.EffectSpamGun, overlapText = "Guardian Effect Spam Gun", toolTip = "Spawns effects wherever your hand desires."},
+                new ButtonInfo { buttonText = "Guardian Effect Spam Hands <color=grey>[</color><color=green>G</color><color=grey>]</color>", method = Overpowered.GuardianEffectSpamHands, toolTip = "Spawns effects when holding <color=green>grip</color>."},
+                new ButtonInfo { buttonText = "Effect Spam Gun", method = Overpowered.GuardianEffectSpamGun, overlapText = "Guardian Effect Spam Gun", toolTip = "Spawns effects wherever your hand desires."},
 
-                new ButtonInfo { buttonText = "Guardian Freeze Gun", method = Overpowered.PhysicalFreezeGun, toolTip = "Freezes whoever your hand desires." },
-                new ButtonInfo { buttonText = "Guardian Freeze All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.PhysicalFreezeAll, toolTip = "Freezes everyone in the room when holding <color=green>trigger</color>." },
+                new ButtonInfo { buttonText = "Guardian Freeze Gun", method = Overpowered.GuardianPhysicalFreezeGun, toolTip = "Freezes whoever your hand desires." },
+                new ButtonInfo { buttonText = "Guardian Freeze All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianPhysicalFreezeAll, toolTip = "Freezes everyone in the room when holding <color=green>trigger</color>." },
 
                 new ButtonInfo { buttonText = "Guardian Kick Gun", method = Overpowered.GuardianKickGun, toolTip = "Kicks whoever your hand desires." },
                 new ButtonInfo { buttonText = "Guardian Kick All <color=grey>[</color><color=green>T</color><color=grey>]</color>", method = Overpowered.GuardianKickAll, toolTip = "Kicks everyone in the room when holding <color=green>trigger</color>." },
@@ -2071,15 +2072,16 @@ namespace Seralyth.Menu
                 //new ButtonInfo { buttonText = "Kick Gun", method =() => Overpowered.KickGun(), disableMethod =() => Overpowered.DisableKick(), toolTip = "Kicks whoever your hand desires."},
                 //new ButtonInfo { buttonText = "Kick All", enableMethod =() => Overpowered.KickAll(), disableMethod =() => Overpowered.DisableKick(), toolTip = "Kicks everyone in the room."},
 
-                new ButtonInfo { buttonText = "Force Grab", method = Overpowered.ForceGrab, toolTip = "Attempts to grab the hand of anyone who presses their grips." },
+                new ButtonInfo { buttonText = "Force Grab", postMethod = Overpowered.ForceGrab, toolTip = "Attempts to grab the hand of anyone who presses their grips." },
+                new ButtonInfo { buttonText = "Force Grab Gun", postMethod = Overpowered.ForceGrabGun, toolTip = "Forcibly grab whoever your hand desires." },
                 new ButtonInfo { buttonText = "Fling on Grab", method = Overpowered.FlingOnGrab, toolTip = "Flings the player when they grab you." },
-                new ButtonInfo { buttonText = "Kick on Grab", method =() => Overpowered.TowardsPositionOnGrab(new Vector3(-71.33718f, 101.4977f, -93.09029f)), toolTip = "Kicks the player when they grab you." },
-                new ButtonInfo { buttonText = "Crash on Grab", method =() => Overpowered.DirectionOnGrab(Vector3.one), toolTip = "Crashes the player when they grab you." },
-                new ButtonInfo { buttonText = "Destroy on Grab", method =() => Overpowered.DirectionOnGrab(new Vector3(1f, -1f, 1f)), toolTip = "Destroys the player when they grab you." },
-                new ButtonInfo { buttonText = "Obliterate on Grab", method =() => Overpowered.DirectionOnGrab(Vector3.up), toolTip = "Obliterates the player when they grab you." },
-                new ButtonInfo { buttonText = "Towards Point on Grab Gun", method = Overpowered.TowardsPointOnGrab, disableMethod = Overpowered.DisableTowardsPointOnGrab, toolTip = "Sends the player to your target position when they grab you." },
+                new ButtonInfo { buttonText = "Kick on Grab", postMethod =() => Overpowered.TowardsPositionOnGrab(new Vector3(-71.33718f, 101.4977f, -93.09029f)), toolTip = "Kicks the player when they grab you." },
+                new ButtonInfo { buttonText = "Crash on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(10000, 10000, 10000)), toolTip = "Crashes the player when they grab you." },
+                new ButtonInfo { buttonText = "Destroy on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(1f, -1f, 1f)), toolTip = "Destroys the player when they grab you." },
+                new ButtonInfo { buttonText = "Obliterate on Grab", postMethod =() => Overpowered.DirectionOnGrab(Vector3.up), toolTip = "Obliterates the player when they grab you." },
+                new ButtonInfo { buttonText = "Towards Point on Grab Gun", postMethod = Overpowered.TowardsPointOnGrab, disableMethod = Overpowered.DisableTowardsPointOnGrab, toolTip = "Sends the player to your target position when they grab you." },
                 new ButtonInfo { buttonText = "Give Fly on Grab", method = Overpowered.GiveFlyOnGrab, toolTip = "When someone is holding you, they can fly by pressing their trigger." },
-                new ButtonInfo { buttonText = "Fling Shotgun", method = Overpowered.FlingShotgun, toolTip = "When holding someone, press trigger to shoot them away." },
+                new ButtonInfo { buttonText = "Fling Shotgun", postMethod = Overpowered.FlingShotgun, toolTip = "When holding someone, press trigger to shoot them away." },
 
                 //new ButtonInfo { buttonText = "Lag Server", method =() => Overpowered.FreezeServer(1f, 11), toolTip = "Lags the room." },
                 //new ButtonInfo { buttonText = "Freeze Server", enableMethod =() => SerializePatch.OverrideSerialization = () => false, method =() => Overpowered.FreezeServer(), disableMethod =() => SerializePatch.OverrideSerialization = null, toolTip = "Freezes the room." },
@@ -2087,6 +2089,18 @@ namespace Seralyth.Menu
                 //new ButtonInfo { buttonText = "Za Warudo <color=grey>[</color><color=green>T</color><color=grey>]</color>", enableMethod = Overpowered.ZaWarudo_enableMethod, method = Overpowered.ZaWarudo, toolTip = "Freeze all, but with special effects." },
 
                 new ButtonInfo { buttonText = "Anti Report <color=grey>[</color><color=green>Fling</color><color=grey>]</color>", method = Overpowered.AntiReportFling, toolTip = "Flings whoever tries to report you."},
+                
+                new ButtonInfo { buttonText = "Fling Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.FlingGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to fling whoever your hand desires."},
+                new ButtonInfo { buttonText = "Fling All", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.FlingAll, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to fling everyone in the room."},
+
+                new ButtonInfo { buttonText = "Bring Player Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.BringPlayerGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to bring whoever your hand desires to you."},
+                new ButtonInfo { buttonText = "Bring All Players", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.BringAllPlayers, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to bring everyone in the room to you."},
+                new ButtonInfo { buttonText = "Push Player Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.PushPlayerGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to push whoever your hand desires away from you."},
+                new ButtonInfo { buttonText = "Push All Players", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.PushAllPlayers, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to push everyone in the room."},
+
+                new ButtonInfo { buttonText = "Crash Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.CrashGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to crash whoever your hand desires."},
+                new ButtonInfo { buttonText = "Crash All", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.CrashAll, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to crash everyone in the room."},
+
 
                 new ButtonInfo { buttonText = "Lag Gun", method = Overpowered.LagGun, toolTip = "Lags whoever your hand desires."},
                 new ButtonInfo { buttonText = "Lag All", method = Overpowered.LagAll, toolTip = "Lags everyone in the room."},
@@ -2535,23 +2549,24 @@ namespace Seralyth.Menu
             new[] { // Credits [38]
                 new ButtonInfo { buttonText = "Exit Credits", method =() => CurrentCategoryName = "Main", isTogglable = false, toolTip = "Returns you back to the main page.", legal = true},
 
-                new ButtonInfo { buttonText = "Kingofnetflix", method =() => Process.Start("https://github.com/kingofnetflix"), isTogglable = false, toolTip = "Kingofnetflix was a developer for ii's <b>Stupid</b> Menu, and the creator of <b>Seralyth (Menu)</b>. Creating mods since 2022, he's been very impactful towards ii's Stupid Menu.", legal = true},
+                new ButtonInfo { buttonText = "Kingofnetflix", method =() => Process.Start("https://github.com/kingofnetflix"), isTogglable = false, toolTip = "Kingofnetflix is the creator of <b>Seralyth (Menu)</b>, and was a developer for ii's <b>Stupid</b> Menu." },
                 new ButtonInfo { buttonText = "iiDk", method =() => Process.Start("https://github.com/iiDk-the-actual"), isTogglable = false, toolTip = "iiDk is the creator of ii's <b>Stupid</b> Menu (which this menu is forked from), and was working on it since 2023. He was also the owner of ii's Stupid Mods. Both have shut down ever since 2/24/2026.", legal = true},
+                new ButtonInfo { buttonText = "Twigcore", method =() => Process.Start("https://github.com/Twigcore"), isTogglable = false, toolTip = "Twigcore is one of the main owners of Console, the admin system in the menu. He helps with asset ideas, moderate users, contributed to the menu, and much more."},
 
-                new ButtonInfo { buttonText = "Joseph", method =() => Process.Start("https://github.com/josephabyt"), isTogglable = false, toolTip = "Joseph has contributed to ii's <b>Stupid</b> Menu. He is the creator of many mods, like the debug screen, extenders, disable menu title, steam refund timer, and many more.", legal = true},
-                new ButtonInfo { buttonText = "Tagdoesnothing", method =() => Process.Start("https://github.com/JuanLeoson"), isTogglable = false, toolTip = "Tag has contributed to ii's <b>Stupid</b> Menu. She fixed small bugs and helped bug test the menu.", legal = true},
-                new ButtonInfo { buttonText = "DrPerky", method =() => Process.Start("https://github.com/DrPerkyLegit"), isTogglable = false, toolTip = "DrPerky has contributed to ii's <b>Stupid</b> Menu. He helped me rewrite all of the visual mods.", legal = true},
-                new ButtonInfo { buttonText = "ShibaGT", method =() => Process.Start("https://github.com/ShibaGT"), isTogglable = false, toolTip = "ShibaGT has contributed to ii's <b>Stupid</b> Menu. He gave me a coroutine manager, and created minor things for the menu.", legal = true},
-                new ButtonInfo { buttonText = "TestofficialXD", method =() => Process.Start("https://github.com/TestofficialXD"), isTogglable = false, toolTip = "TestofficialXD has contributed to ii's <b>Stupid</b> Menu. He wrote the initial critter mods, and gave me the idea for Tag Sounds.", legal = true},
-                new ButtonInfo { buttonText = "Leetus", method =() => Process.Start("https://github.com/leetus"), isTogglable = false, toolTip = "Leetus has contributed to ii's <b>Stupid</b> Menu. He made minor optimizations to mods in the menu.", legal = true},
+                new ButtonInfo { buttonText = "Joseph", method =() => Process.Start("https://github.com/josephabyt"), isTogglable = false, toolTip = "Joseph has contributed to ii's <b>Stupid</b> Menu. He is the creator of many mods, like the debug screen, extenders, disable menu title, steam refund timer, and many more."},
+                new ButtonInfo { buttonText = "Tagdoesnothing", method =() => Process.Start("https://github.com/JuanLeoson"), isTogglable = false, toolTip = "Tag has contributed to ii's <b>Stupid</b> Menu. She fixed small bugs and helped bug test the menu." },
+                new ButtonInfo { buttonText = "DrPerky", method =() => Process.Start("https://github.com/DrPerkyLegit"), isTogglable = false, toolTip = "DrPerky has contributed to ii's <b>Stupid</b> Menu. He helped me rewrite all of the visual mods."},
+                new ButtonInfo { buttonText = "ShibaGT", method =() => Process.Start("https://github.com/ShibaGT"), isTogglable = false, toolTip = "ShibaGT has contributed to ii's <b>Stupid</b> Menu. He gave me a coroutine manager, and created minor things for the menu."},
+                new ButtonInfo { buttonText = "TestofficialXD", method =() => Process.Start("https://github.com/TestofficialXD"), isTogglable = false, toolTip = "TestofficialXD has contributed to ii's <b>Stupid</b> Menu. He wrote the initial critter mods, and gave me the idea for Tag Sounds."},
+                new ButtonInfo { buttonText = "Leetus", method =() => Process.Start("https://github.com/leetus"), isTogglable = false, toolTip = "Leetus has contributed to ii's <b>Stupid</b> Menu. He made minor optimizations to mods in the menu."},
 
-                new ButtonInfo { buttonText = "Graze", method =() => Process.Start("https://github.com/The-Graze"), isTogglable = false, toolTip = "Graze gave me permission to use their color detection system and Media Control buttons.", legal = true},
-                new ButtonInfo { buttonText = "Zvbex", method =() => Process.Start("https://guns.lol/zvbexisking"), isTogglable = false, toolTip = "Zvbex gave me permission to use their initial platform detection system.", legal = true},
-                new ButtonInfo { buttonText = "Shiny", method =() => Process.Start("https://github.com/Shiny003"), isTogglable = false, toolTip = "Shiny gave me permission to use their PlayFab display name spoof patch.", legal = true},
-                new ButtonInfo { buttonText = "Will", method =() => Process.Start("https://github.com/64will64"), isTogglable = false, toolTip = "Will gave me the idea to make body rotation mods and the Low FPS Movement mod.", legal = true},
+                new ButtonInfo { buttonText = "Graze", method =() => Process.Start("https://github.com/The-Graze"), isTogglable = false, toolTip = "Graze gave me permission to use their color detection system and Media Control buttons."},
+                new ButtonInfo { buttonText = "Zvbex", method =() => Process.Start("https://guns.lol/zvbexisking"), isTogglable = false, toolTip = "Zvbex gave me permission to use their initial platform detection system."},
+                new ButtonInfo { buttonText = "Shiny", method =() => Process.Start("https://github.com/Shiny003"), isTogglable = false, toolTip = "Shiny gave me permission to use their PlayFab display name spoof patch."},
+                new ButtonInfo { buttonText = "Will", method =() => Process.Start("https://github.com/64will64"), isTogglable = false, toolTip = "64Will64 gave me the idea to make body rotation mods and the Low FPS Movement mod."},
                 new ButtonInfo { buttonText = "KyleTheScientist", method =() => Process.Start("https://github.com/KyleTheScientist"), isTogglable = false, toolTip = "KyleTheScientist gave me the idea to add \"Bark Fly\" to the menu and helped me create and use asset bundles.", legal = true},
-                new ButtonInfo { buttonText = "Gorilla Dev", method =() => Process.Start("https://github.com/GorillerDev"), isTogglable = false, toolTip = "Gorilla Dev gave me the idea to add \"Anti Report <color=grey>[</color><color=green>Oculus</color><color=grey>]</color>\" to the menu.", legal = true},
-                new ButtonInfo { buttonText = "EyeCantSee", method =() => Process.Start("https://github.com/charlottebutson-pixel"), isTogglable = false, toolTip = "EyeCantSee has pushed minor optimizations and features to the menu.", legal = true},
+                new ButtonInfo { buttonText = "Gorilla Dev", method =() => Process.Start("https://github.com/GorillerDev"), isTogglable = false, toolTip = "Gorilla Dev gave me the idea to add \"Anti Report <color=grey>[</color><color=green>Oculus</color><color=grey>]</color>\" to the menu."},
+                new ButtonInfo { buttonText = "EyeCantSee", method =() => Process.Start("https://github.com/charlottebutson-pixel"), isTogglable = false, toolTip = "EyeCantSee has pushed minor optimizations and features to the menu."},
 
                 new ButtonInfo { buttonText = "GPL v3", method =() => Process.Start("https://www.gnu.org/licenses/gpl-3.0.html"), isTogglable = false, toolTip = "The GNU General Public License Version 3 is the license that my menu uses. It proveides a \"free, copyleft license for software and other kinds of works.\"", legal = true},
             },

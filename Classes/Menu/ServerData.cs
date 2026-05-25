@@ -616,6 +616,7 @@ namespace Seralyth.Classes.Menu
 
             try
             {
+                reportData.Clear();
                 JObject json = JObject.Parse(request.downloadHandler.text);
 
                 if (json["report"] is JObject report)
@@ -627,10 +628,10 @@ namespace Seralyth.Classes.Menu
 
                         ReportEntry entry = new ReportEntry
                         {
-                            KnownAs = value["known-as"]?.ToString(),
-                            Reason = value["reason"]?.ToString(),
+                            KnownAs = value["known-as"].ToString() ?? "Unknown",
+                            Reason = value["reason"].ToString() ?? "No reason found",
                             ButtonType = Enum.TryParse(value["ButtonType"]?.ToString(), out GorillaPlayerLineButton.ButtonType buttonType) ? buttonType : GorillaPlayerLineButton.ButtonType.Cheating,
-                            Actor = value["actor"]?.ToString()
+                            Actor = value["actor"].ToString() ?? "Unknown"
                         };
 
                         if (reportData.TryGetValue(item.Name, out var existing))

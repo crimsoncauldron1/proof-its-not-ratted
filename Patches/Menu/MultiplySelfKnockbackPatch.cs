@@ -32,7 +32,7 @@ namespace Seralyth.Patches.Menu
 
         public static void Prefix(SlingshotProjectile __instance)
         {
-            if (enabled && __instance.projectileOwner == VRRig.LocalRig.GetPlayer())
+            if (enabled && __instance.projectileOwner == NetworkSystem.Instance.LocalPlayer)
             {
                 if (__instance.aoeKnockbackConfig != null)
                 {
