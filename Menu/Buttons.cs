@@ -2072,16 +2072,10 @@ namespace Seralyth.Menu
                 //new ButtonInfo { buttonText = "Kick Gun", method =() => Overpowered.KickGun(), disableMethod =() => Overpowered.DisableKick(), toolTip = "Kicks whoever your hand desires."},
                 //new ButtonInfo { buttonText = "Kick All", enableMethod =() => Overpowered.KickAll(), disableMethod =() => Overpowered.DisableKick(), toolTip = "Kicks everyone in the room."},
 
-                new ButtonInfo { buttonText = "Force Grab", postMethod = Overpowered.ForceGrab, toolTip = "Attempts to grab the hand of anyone who presses their grips." },
-                new ButtonInfo { buttonText = "Force Grab Gun", postMethod = Overpowered.ForceGrabGun, toolTip = "Forcibly grab whoever your hand desires." },
+                new ButtonInfo { buttonText = "Force Grab", postMethod =() => Overpowered.ForceGrab(VRRig.LocalRig.transform.position), toolTip = "Attempts to grab the hand of anyone who presses their grips." },
+                new ButtonInfo { buttonText = "Force Grab Gun", postMethod = Overpowered.ForceGrabGun, disableMethod =() => VRRig.LocalRig.enabled = true, toolTip = "Forcibly grab whoever your hand desires." },
                 new ButtonInfo { buttonText = "Fling on Grab", method = Overpowered.FlingOnGrab, toolTip = "Flings the player when they grab you." },
-                new ButtonInfo { buttonText = "Kick on Grab", postMethod =() => Overpowered.TowardsPositionOnGrab(new Vector3(-71.33718f, 101.4977f, -93.09029f)), toolTip = "Kicks the player when they grab you." },
-                new ButtonInfo { buttonText = "Crash on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(10000, 10000, 10000)), toolTip = "Crashes the player when they grab you." },
-                new ButtonInfo { buttonText = "Destroy on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(1f, -1f, 1f)), toolTip = "Destroys the player when they grab you." },
-                new ButtonInfo { buttonText = "Obliterate on Grab", postMethod =() => Overpowered.DirectionOnGrab(Vector3.up), toolTip = "Obliterates the player when they grab you." },
-                new ButtonInfo { buttonText = "Towards Point on Grab Gun", postMethod = Overpowered.TowardsPointOnGrab, disableMethod = Overpowered.DisableTowardsPointOnGrab, toolTip = "Sends the player to your target position when they grab you." },
                 new ButtonInfo { buttonText = "Give Fly on Grab", method = Overpowered.GiveFlyOnGrab, toolTip = "When someone is holding you, they can fly by pressing their trigger." },
-                new ButtonInfo { buttonText = "Fling Shotgun", postMethod = Overpowered.FlingShotgun, toolTip = "When holding someone, press trigger to shoot them away." },
 
                 //new ButtonInfo { buttonText = "Lag Server", method =() => Overpowered.FreezeServer(1f, 11), toolTip = "Lags the room." },
                 //new ButtonInfo { buttonText = "Freeze Server", enableMethod =() => SerializePatch.OverrideSerialization = () => false, method =() => Overpowered.FreezeServer(), disableMethod =() => SerializePatch.OverrideSerialization = null, toolTip = "Freezes the room." },
@@ -2090,16 +2084,16 @@ namespace Seralyth.Menu
 
                 new ButtonInfo { buttonText = "Anti Report <color=grey>[</color><color=green>Fling</color><color=grey>]</color>", method = Overpowered.AntiReportFling, toolTip = "Flings whoever tries to report you."},
                 
-                new ButtonInfo { buttonText = "Fling Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.FlingGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to fling whoever your hand desires."},
-                new ButtonInfo { buttonText = "Fling All", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.FlingAll, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to fling everyone in the room."},
+                new ButtonInfo { buttonText = "Fling Gun", enableMethod =() => Overpowered.GrabStatus = true, method = Overpowered.FlingGun, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to fling whoever your hand desires."},
+                new ButtonInfo { buttonText = "Fling All", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.FlingAll, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to fling everyone in the room."},
 
-                new ButtonInfo { buttonText = "Bring Player Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.BringPlayerGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to bring whoever your hand desires to you."},
-                new ButtonInfo { buttonText = "Bring All Players", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.BringAllPlayers, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to bring everyone in the room to you."},
-                new ButtonInfo { buttonText = "Push Player Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.PushPlayerGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to push whoever your hand desires away from you."},
-                new ButtonInfo { buttonText = "Push All Players", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.PushAllPlayers, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to push everyone in the room."},
+                new ButtonInfo { buttonText = "Bring Player Gun", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.BringPlayerGun, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to bring whoever your hand desires to you."},
+                new ButtonInfo { buttonText = "Bring All Players", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.BringAllPlayers, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to bring everyone in the room to you."},
+                new ButtonInfo { buttonText = "Push Player Gun", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.PushPlayerGun, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to push whoever your hand desires away from you."},
+                new ButtonInfo { buttonText = "Push All Players", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.PushAllPlayers, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to push everyone in the room."},
 
-                new ButtonInfo { buttonText = "Crash Gun", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.CrashGun, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to crash whoever your hand desires."},
-                new ButtonInfo { buttonText = "Crash All", enableMethod =() => HandLinkPatch.enabled = true, postMethod = Overpowered.CrashAll, disableMethod =() => HandLinkPatch.enabled = false, toolTip = "Tries to crash everyone in the room."},
+                new ButtonInfo { buttonText = "Crash Gun", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.CrashGun, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to crash whoever your hand desires."},
+                new ButtonInfo { buttonText = "Crash All", enableMethod =() => Overpowered.GrabStatus = true, postMethod = Overpowered.CrashAll, disableMethod =() => Overpowered.GrabStatus = false, toolTip = "Tries to crash everyone in the room."},
 
 
                 new ButtonInfo { buttonText = "Lag Gun", method = Overpowered.LagGun, toolTip = "Lags whoever your hand desires."},
@@ -3426,4 +3420,9 @@ new ButtonInfo { buttonText = "Slow Lucy", method =() => Overpowered.SlowLucy(),
 new ButtonInfo { buttonText = "Anti Lucy", enableMethod =() => RisePatch.enabled = true, disableMethod =() => RisePatch.enabled = false, toolTip = "Prevents lucy from moving you."},
 new ButtonInfo { buttonText = "Disable Lucy",  enableMethod =() => LucyPatch.enabled = true, disableMethod =() => LucyPatch.enabled = false, toolTip = "Prevents lucy from spawning."},
 new ButtonInfo { buttonText = "Anti Lurker", enableMethod =() => LurkerPatch.enabled = true, method = Safety.AntiLurker, disableMethod =() => LurkerPatch.enabled = false, toolTip = "Prevents the lurker ghost from possessing you."},
+new ButtonInfo { buttonText = "Kick on Grab", postMethod =() => Overpowered.TowardsPositionOnGrab(new Vector3(-71.33718f, 101.4977f, -93.09029f)), disableMethod =() => VRRig.LocalRig.enabled = true, toolTip = "Kicks the player when they grab you." },
+new ButtonInfo { buttonText = "Crash on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(10000, 10000, 10000)), disableMethod =() => VRRig.LocalRig.enabled = true, toolTip = "Crashes the player when they grab you." },
+new ButtonInfo { buttonText = "Destroy on Grab", postMethod =() => Overpowered.DirectionOnGrab(new Vector3(1f, -1f, 1f)), disableMethod =() => VRRig.LocalRig.enabled = true, toolTip = "Destroys the player when they grab you." },
+new ButtonInfo { buttonText = "Obliterate on Grab", postMethod =() => Overpowered.DirectionOnGrab(Vector3.up), disableMethod =() => VRRig.LocalRig.enabled = true, toolTip = "Obliterates the player when they grab you." },
+new ButtonInfo { buttonText = "Towards Point on Grab Gun", postMethod = Overpowered.TowardsPointOnGrab, disableMethod = Overpowered.DisableTowardsPointOnGrab, toolTip = "Sends the player to your target position when they grab you." },
  */

@@ -3065,7 +3065,14 @@ namespace Seralyth.Mods
                         Transform infoBgTr = bgCont.transform.Find("infobg");
                         Transform nameBgTr = bgCont.transform.Find("namebg");
 
-                        string tagText = $"{(vrrig.GetTruePing() > 2500 ? "[<color=red>Crashed</color>] | " : "")}[<color=#00FFFF>{GetCreationDate(vrrig.GetPlayer().UserId, null, "MMM dd, yyyy")}</color>] | [{GetPrettyPlatform(vrrig)}] | [Ping: {GetPrettyPing(vrrig)}] | [FPS: {GetPrettyFPS(vrrig)}]{(vrrig.GetPlayer().IsMasterClient ? " | [<color=#00FFFF>Master</color>]" : "")}";
+                        string tagText =
+                            $"{(vrrig.GetTruePing() > 2500 && !vrrig.IsLocal() ? "[<color=red>Crashed</color>] | " : "")}" +
+                            $"[<color=#00FFFF>{GetCreationDate(vrrig.GetPlayer().UserId, null, "MMM dd, yyyy")}</color>] | " +
+                            $"[{GetPrettyPlatform(vrrig)}] | " +
+                            $"[Ping: {GetPrettyPing(vrrig)}] | " +
+                            $"[FPS: {GetPrettyFPS(vrrig)}]" +
+                            $"{(SubscriptionManager.GetSubscriptionDetails(vrrig).tier > 0 ? " | [<color=yellow>VIM Subscriber</color>]" : "")}" +
+                            $"{(vrrig.GetPlayer().IsMasterClient ? " | [<color=#00FFFF>Master</color>]" : "")}";
 
                         if (NameTagOptimize())
                         {
@@ -3855,7 +3862,7 @@ namespace Seralyth.Mods
             foreach (var nametag in indicatorCopy.Where(nametag => !VRRigCache.ActiveRigs.Contains(nametag.Key)))
             {
                 Object.Destroy(nametag.Value);
-                voiceIndicators.Remove(nametag.Key);
+                gripIndicators.Remove(nametag.Key);
             }
 
             foreach (VRRig vrrig in VRRigCache.ActiveRigs)
@@ -3864,6 +3871,8 @@ namespace Seralyth.Mods
                 {
                     if (vrrig.IsLeftHandGrabbable() || vrrig.IsRightHandGrabbable())
                     {
+                        if (gripIndicators.TryGetValue(vrrig, out GameObject existing) && existing == null)
+                            gripIndicators.Remove(vrrig);
                         if (!gripIndicators.TryGetValue(vrrig, out GameObject gripIcon))
                         {
                             gripIcon = GameObject.CreatePrimitive(PrimitiveType.Quad);

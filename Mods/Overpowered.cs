@@ -27,6 +27,7 @@ using GorillaLocomotion.Gameplay;
 using GorillaNetworking;
 using GorillaTagScripts;
 using GorillaTagScripts.VirtualStumpCustomMaps;
+using Harmony;
 using Ionic.Zlib;
 using Photon.Pun;
 using Photon.Realtime;
@@ -45,7 +46,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.VirtualTexturing;
+using UnityEngine.XR.Interaction.Toolkit;
 using static Seralyth.Menu.Main;
 using static Seralyth.Utilities.AssetUtilities;
 using static Seralyth.Utilities.GameModeUtilities;
@@ -1107,49 +1111,6 @@ namespace Seralyth.Mods
             }
         }
 
-        public static void DirectionOnGrab(Vector3 direction)
-        {
-            VRRig.LocalRig.enabled = true;
-            foreach (var rig in VRRigCache.ActiveRigs.Where(rig => !rig.isLocal).Where(rig => rig.leftHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer || rig.rightHandLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer))
-            {
-                VRRig.LocalRig.enabled = false;
-                VRRig.LocalRig.transform.position += direction.normalized * 2000f;
-            }
-        }
-
-        private static GameObject point;
-        public static void TowardsPointOnGrab()
-        {
-            if (point == null)
-            {
-                point = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Object.Destroy(point.GetComponent<Collider>());
-                point.transform.position = GorillaTagger.Instance.rightHandTransform.position;
-                point.transform.localScale = Vector3.one * 0.2f;
-            }
-
-            point.GetComponent<Renderer>().material.color = buttonColors[1].GetCurrentColor();
-
-            if (GetGunInput(false))
-            {
-                var GunData = RenderGun();
-                GameObject NewPointer = GunData.NewPointer;
-
-                if (GetGunInput(true))
-                    point.transform.position = NewPointer.transform.position;
-            }
-
-            TowardsPositionOnGrab(point.transform.position);
-        }
-
-        public static void DisableTowardsPointOnGrab()
-        {
-            if (point != null)
-            {
-                Object.Destroy(point);
-                point = null;
-            }
-        }
 
         public static void GiveFlyOnGrab()
         {
@@ -1169,77 +1130,21 @@ namespace Seralyth.Mods
                 }
             }
         }
-        public static void FlingShotgun()
+
+
+
+        public static void ForceGrab(Vector3 targetTransform)
         {
-            if (VRRig.LocalRig.leftHandLink.IsLinkActive() || VRRig.LocalRig.rightHandLink.IsLinkActive())
-            {
-                bool left = VRRig.LocalRig.leftHandLink.IsLinkActive();
-                if (left ? leftTriggerPressed : rightTriggerPressed)
-                    VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position + GetGunDirection(left ? GorillaTagger.Instance.leftHandTransform : GorillaTagger.Instance.rightHandTransform) * ShootStrength;
-            }
+            foreach (VRRig rig in VRRigCache.ActiveRigs)
+                ForceGrab(rig, targetTransform);
         }
 
-        public static bool notifyGrab;
-        public static void ForceGrab()
+        public static bool ForceGrab(VRRig rig, Vector3 targetTransform, bool returnOnGrab = false, bool enableRigOnceDone = false)
         {
-            if (!notifyGrab)
-            {
-                Prompt("This mod requires the person to be holding their grip for it to work. Try using the mod \"Grabbable Indicators\" to see who!");
-                notifyGrab = true;
-            }
-            if (Time.time > grabDelay)
-            {
-                foreach (VRRig rig in VRRigCache.ActiveRigs)
-                {
-                    if (rig.IsLocal()) continue;
+            if (rig.IsLocal() || rig == null) return false;
 
-                        if ((rig.leftMiddle.calcT > 0.8f && rig.leftHandLink.grabbedPlayer == null) || (rig.rightMiddle.calcT > 0.8f && rig.rightHandLink.grabbedPlayer == null))
-                        {
-                            bool isLeftHand = rig.leftMiddle.calcT > 0.8f;
-                            /* old code
-                       VRRig.LocalRig.enabled = false;
-                       VRRig.LocalRig.transform.position = rig.transform.position - Vector3.up * 0.5f;
-                       VRRig.LocalRig.transform.rotation = Quaternion.identity;
-
-                       VRMap targetHand = isLeftHand ? VRRig.LocalRig.leftHand : VRRig.LocalRig.rightHand;
-                       targetHand.rigTarget.transform.position = isLeftHand ? rig.leftHandTransform.position : rig.rightHandTransform.position;
-                       targetHand.rigTarget.transform.rotation = isLeftHand ? rig.leftHandTransform.rotation : rig.rightHandTransform.rotation;
-
-                       VRRig.LocalRig.leftIndex.calcT = 1f;
-                       VRRig.LocalRig.leftMiddle.calcT = 1f;
-                       VRRig.LocalRig.leftThumb.calcT = 1f;
-
-                       VRRig.LocalRig.leftIndex.LerpFinger(1f, false);
-                       VRRig.LocalRig.leftMiddle.LerpFinger(1f, false);
-                       VRRig.LocalRig.leftThumb.LerpFinger(1f, false);
-
-                       VRRig.LocalRig.rightIndex.calcT = 1f;
-                       VRRig.LocalRig.rightMiddle.calcT = 1f;
-                       VRRig.LocalRig.rightThumb.calcT = 1f;
-
-                       VRRig.LocalRig.rightIndex.LerpFinger(1f, false);
-                       VRRig.LocalRig.rightMiddle.LerpFinger(1f, false);
-                       VRRig.LocalRig.rightThumb.LerpFinger(1f, false);
-                       */
-                            TakeMyHand_HandLink link = isLeftHand ? VRRig.LocalRig.leftHandLink : VRRig.LocalRig.rightHandLink;
-                            link.IsTentacleGrab = true;
-                            link.LocalCreateLink(isLeftHand ? rig.leftHandLink : rig.rightHandLink);
-                            SendSerialize(VRRig.LocalRig.GetPhotonView(), new RaiseEventOptions { TargetActors = new[] { rig.GetPlayer().ActorNumber } });
-                            break;
-                        }
-                    }
-                grabDelay = Time.time + 0.6f;
-            }
-        }
-
-        public static bool ForceGrab(VRRig rig, bool disableRigOnceDone = true)
-        {
-            if (!notifyGrab)
-            {
-                Prompt("This mod requires the person to be holding their grip for it to work. Try using the mod \"Grabbable Indicators\" to see who!");
-                notifyGrab = true;
-            }
-            if (rig.IsLocal()) return false;
+            VRRig.LocalRig.enabled = false;
+            VRRig.LocalRig.transform.position = targetTransform;
 
             bool isLeftHand = rig.IsLeftHandGrabbable();
             bool isRightHand = rig.IsRightHandGrabbable();
@@ -1248,38 +1153,29 @@ namespace Seralyth.Mods
 
             var localLink = isLeftHand ? VRRig.LocalRig.leftHandLink : VRRig.LocalRig.rightHandLink;
             var remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
-            if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
+
+            if (remoteLink.grabbedPlayer != NetworkSystem.Instance.LocalPlayer)
             {
-                if (!VRRig.LocalRig.enabled && disableRigOnceDone)
-                    VRRig.LocalRig.enabled = true;
-                return true;
-            } else if (remoteLink.grabbedPlayer != NetworkSystem.Instance.LocalPlayer)
-            {
-                VRRig.LocalRig.transform.position = rig.syncPos;
-                /* old code
-                VRRig.LocalRig.transform.position = rig.syncPos;
-                if (isLeftHand)
-                    VRRig.LocalRig.leftHand.rigTarget.position = rig.leftHand.rigTarget.position;
-                else
-                    VRRig.LocalRig.rightHand.rigTarget.position = rig.rightHand.rigTarget.position;
-                */
-                if (Time.time > grabDelay && (isLeftHand || isRightHand))
+                if (grabDelay == 0)
+                    grabDelay = remoteLink.rejectGrabsUntilTimestamp > Time.time ? remoteLink.rejectGrabsUntilTimestamp : Time.time + 1f;
+                if (Time.time > grabDelay)
                 {
-                    localLink.IsTentacleGrab = true;
-                    localLink.LocalCreateLink(remoteLink);
-                    SendSerialize(VRRig.LocalRig.GetPhotonView(), new RaiseEventOptions { TargetActors = new[] { rig.GetPlayer().ActorNumber } });
-                    grabDelay = Time.time + 0.6f;
+                    VRRig.LocalRig.transform.position = rig.syncPos;
+                    localLink.TentacleTryCreateLink(remoteLink);
+                    NotificationManager.SendNotification("<color=grey>[</color><color=purple>MENU</color><color=grey>]</color> Tried to grab " + rig.GetPlayer().NickName + ".");
+                    grabDelay = remoteLink.rejectGrabsUntilTimestamp > Time.time ? remoteLink.rejectGrabsUntilTimestamp : Time.time + 1f;
                 }
             }
-            VRRig.LocalRig.enabled = true;
+            else if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer && returnOnGrab)
+            {
+                if (enableRigOnceDone && !VRRig.LocalRig.enabled)
+                    VRRig.LocalRig.enabled = true;
+                return true;
+            }
+
             return false;
         }
 
-        public static void TowardsPositionOnGrab(Vector3 position)
-        {
-            if (VRRig.LocalRig.leftHandLink.IsLinkActive() || VRRig.LocalRig.rightHandLink.IsLinkActive())
-                VRRig.LocalRig.transform.position = position;
-        }
 
         public static void FlingOnGrab()
         {
@@ -3230,7 +3126,7 @@ namespace Seralyth.Mods
                 NotificationManager.SendNotification("<color=grey>[</color><color=red>ERROR</color><color=grey>]</color> You must be guardian.");
         }
 
-        private static float grabDelay;
+        private static float grabDelay = 0;
         public static void GuardianGrabGun()
         {
             if (GetGunInput(false))
@@ -5433,7 +5329,7 @@ namespace Seralyth.Mods
             ZaWarudo_EndCoroutineVariable = null;
         }
 
-        public static int lagIndex = 1;
+        public static int lagIndex = 2;
         public static int lagAmount;
         public static float lagDelay;
         public static void ChangeLagPower(bool positive = true)
@@ -5443,7 +5339,7 @@ namespace Seralyth.Mods
             else
                 lagIndex--;
 
-            lagIndex %= 3;
+            lagIndex %= 5;
             if (lagIndex < 0)
                 lagIndex = 2;
 
@@ -5531,7 +5427,17 @@ namespace Seralyth.Mods
             RPCProtection();
         }
 
-        private static float crashDelay;
+        public static bool GrabStatus
+        {
+            get => HandLinkPatch.enabled;
+            set
+            {
+                HandLinkPatch.enabled = value;
+
+                if (!value && !VRRig.LocalRig.enabled)
+                    VRRig.LocalRig.enabled = true;
+            }
+        }
 
         public static void ForceGrabGun()
         {
@@ -5541,7 +5447,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
 
                 if (gunLocked && lockTarget != null)
-                    ForceGrab(lockTarget);
+                    ForceGrab(lockTarget, VRRig.LocalRig.transform.position);
 
                 if (GetGunInput(true))
                 {
@@ -5557,6 +5463,7 @@ namespace Seralyth.Mods
             {
                 if (gunLocked)
                     gunLocked = false;
+                VRRig.LocalRig.enabled = true;
             }
         }
 
@@ -5568,10 +5475,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
 
                 if (gunLocked && lockTarget != null)
-                {
-                    if (ForceGrab(lockTarget))
-                        VRRig.LocalRig.transform.position = new Vector3(Random.value * 1000f, Random.value * 1000f, Random.value * 1000f);
-                }
+                    ForceGrab(lockTarget, Vector3.up * 999);
 
                 if (GetGunInput(true))
                 {
@@ -5587,20 +5491,12 @@ namespace Seralyth.Mods
             {
                 if (gunLocked)
                     gunLocked = false;
+                VRRig.LocalRig.enabled = true;
             }
         }
 
-        public static void FlingAll()
-        {
-            ForceGrab();
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
-            {
-                bool isLeftHand = rig.IsLeftHandGrabbable();
-                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
-                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    VRRig.LocalRig.transform.position = new Vector3(Random.value * 1000f, Random.value * 1000f, Random.value * 1000f);
-            }
-        }
+        public static void FlingAll() =>
+            ForceGrab(Vector3.up * 999);
 
         public static void BringPlayerGun()
         {
@@ -5610,10 +5506,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
 
                 if (gunLocked && lockTarget != null)
-                {
-                    if (ForceGrab(lockTarget))
-                        VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f;
-                }
+                    ForceGrab(lockTarget, VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f);
 
                 if (GetGunInput(true))
                 {
@@ -5632,17 +5525,8 @@ namespace Seralyth.Mods
             } 
         }
 
-        public static void BringAllPlayers()
-        {
-            ForceGrab();
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
-            {
-                bool isLeftHand = rig.IsLeftHandGrabbable();
-                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
-                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    VRRig.LocalRig.transform.position = VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f;
-            }
-        }
+        public static void BringAllPlayers() =>
+            ForceGrab(VRRig.LocalRig.transform.position - VRRig.LocalRig.transform.forward * 10f);
 
         public static void PushPlayerGun()
         {
@@ -5652,10 +5536,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
 
                 if (gunLocked && lockTarget != null)
-                {
-                    if (ForceGrab(lockTarget))
-                        VRRig.LocalRig.transform.position = lockTarget.transform.position - lockTarget.transform.forward * 10f;
-                }
+                    ForceGrab(lockTarget, VRRig.LocalRig.transform.position = lockTarget.transform.position - lockTarget.transform.forward * 10f);
 
                 if (GetGunInput(true))
                 {
@@ -5671,19 +5552,14 @@ namespace Seralyth.Mods
             {
                 if (gunLocked)
                     gunLocked = false;
+                VRRig.LocalRig.enabled = true;
             }
         }
 
         public static void PushAllPlayers()
         {
-            ForceGrab();
             foreach (VRRig rig in VRRigCache.ActiveRigs)
-            {
-                bool isLeftHand = rig.IsLeftHandGrabbable();
-                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
-                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    VRRig.LocalRig.transform.position = rig.transform.position - rig.transform.forward * 10f;
-            }
+                ForceGrab(rig, rig.transform.position - rig.transform.forward * 10f);
         }
 
         public static void CrashGun()
@@ -5694,10 +5570,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
 
                 if (gunLocked && lockTarget != null)
-                {
-                    if (ForceGrab(lockTarget))
-                        VRRig.LocalRig.transform.position += new Vector3(10000, 10000, 10000);
-                }
+                    ForceGrab(lockTarget, new Vector3(50000, 50000, 50000));
 
                 if (GetGunInput(true))
                 {
@@ -5713,20 +5586,12 @@ namespace Seralyth.Mods
             {
                 if (gunLocked)
                     gunLocked = false;
+                VRRig.LocalRig.enabled = true;
             }
         }
 
-        public static void CrashAll()
-        {
-            ForceGrab();
-            foreach (VRRig rig in VRRigCache.ActiveRigs)
-            {
-                bool isLeftHand = rig.IsLeftHandGrabbable();
-                TakeMyHand_HandLink remoteLink = isLeftHand ? rig.leftHandLink : rig.rightHandLink;
-                if (remoteLink.grabbedPlayer == NetworkSystem.Instance.LocalPlayer)
-                    VRRig.LocalRig.transform.position += new Vector3(10000, 10000, 10000);
-            }
-        }
+        public static void CrashAll() =>
+            ForceGrab(new Vector3(50000, 50000, 50000));
 
         public static void LagGun()
         {
@@ -5886,7 +5751,7 @@ namespace Seralyth.Mods
         }
 
         private static float barrelAllDelay;
-        public static void BarrelFlingGun() //fixed by cha yayayayay
+        public static void BarrelFlingGun()
         {
             if (GetGunInput(false))
             {
@@ -5894,7 +5759,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
         
                 if (gunLocked && lockTarget != null)
-                    SendBarrelProjectile(lockTarget.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
+                    SendBarrelProjectile(lockTarget.transform.position, new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
         
                 if (GetGunInput(true))
                 {
@@ -5921,7 +5786,7 @@ namespace Seralyth.Mods
         
             foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
             {
-                SendBarrelProjectile(TargetRig.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
+                SendBarrelProjectile(TargetRig.transform.position, new Vector3(0f, 1020f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
         
                 if (Time.time > barrelAllDelay)
                     throwableProjectileTimeout = 0f;
@@ -5938,7 +5803,7 @@ namespace Seralyth.Mods
                 RaycastHit Ray = GunData.Ray;
         
                 if (gunLocked && lockTarget != null)
-                    SendBarrelProjectile(lockTarget.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
+                    SendBarrelProjectile(lockTarget.transform.position, new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(lockTarget).ActorNumber } });
         
                 if (GetGunInput(true))
                 {
@@ -5966,7 +5831,7 @@ namespace Seralyth.Mods
         
             foreach (var TargetRig in VRRigCache.ActiveRigs.Where(TargetRig => !TargetRig.IsTagged()))
             {
-                SendBarrelProjectile(TargetRig.transform.position + new Vector3(0f, -0.000000001f, 0f), new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
+                SendBarrelProjectile(TargetRig.transform.position, new Vector3(0f, 8000f, 0f), Quaternion.identity, new RaiseEventOptions { TargetActors = new[] { GetPlayerFromVRRig(TargetRig).ActorNumber } });
         
                 if (Time.time > barrelAllDelay)
                     throwableProjectileTimeout = 0f;
@@ -6067,28 +5932,29 @@ namespace Seralyth.Mods
 
             if (transferrableObject.gameObject.activeSelf && Time.time > throwableProjectileTimeout)
             {
-                if (!disableCooldown)
-                    throwableProjectileTimeout = Time.time + 0.3f;
-
                 DeployableObject barrel = transferrableObject.GetComponent<DeployableObject>();
-
-                object[] data = {
-                    barrel._deploySignal._signalID,
-                    PhotonNetwork.ServerTimestamp,
-                    BitPackUtils.PackWorldPosForNetwork(pos),
-                    BitPackUtils.PackQuaternionForNetwork(rot),
-                    BitPackUtils.PackWorldPosForNetwork(vel)
-                };
-
-                PhotonNetwork.RaiseEvent(177, data, options, new SendOptions
+                if (!disableCooldown && barrel.m_spamChecker.CanCallNow())
                 {
-                    Reliability = false,
-                    DeliveryMode = DeliveryMode.ReliableUnsequenced
-                });
-                barrel._child.Deploy(barrel, pos, rot, vel, false);
-                barrel.DeployChild();
+                    object[] data = {
+                        barrel._deploySignal._signalID,
+                        PhotonNetwork.ServerTimestamp,
+                        BitPackUtils.PackWorldPosForNetwork(pos),
+                        BitPackUtils.PackQuaternionForNetwork(rot),
+                        BitPackUtils.PackWorldPosForNetwork(vel)
+                    };
 
-                RPCProtection();
+                    VRRig.LocalRig.transform.position = pos;
+                    VRRig.LocalRig.GetPhotonView().Serialize();
+                    PhotonNetwork.RaiseEvent(177, data, options, new SendOptions
+                    {
+                        Reliability = false,
+                        DeliveryMode = DeliveryMode.ReliableUnsequenced
+                    });
+                    barrel._child.Deploy(barrel, pos, rot, vel, false);
+                    barrel.DeployChild();
+
+                    RPCProtection();
+                }
             }
         }
 
@@ -6918,7 +6784,7 @@ namespace Seralyth.Mods
 
                             SerializePatch.OverrideSerialization = () =>
                             {
-                                SendSerialize(VRRig.LocalRig.GetPhotonView());
+                                VRRig.LocalRig.GetPhotonView().Serialize();
                                 return true;
                             };
                         }

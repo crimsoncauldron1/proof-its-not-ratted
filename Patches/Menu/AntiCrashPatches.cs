@@ -25,6 +25,7 @@ using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
 using Seralyth.Extensions;
+using Seralyth.Managers;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -84,8 +85,8 @@ namespace Seralyth.Patches.Menu
         {
             public static void Postfix(DeployedChild __instance, DeployableObject parent, Vector3 launchPos, Quaternion launchRot, Vector3 releaseVel, bool isRemote = false)
             {
-                if (enabled && parent.m_VRRig.GetPlayer() != NetworkSystem.Instance.LocalPlayer)
-                    __instance._rigidbody.linearVelocity = __instance._rigidbody.linearVelocity.ClampMagnitudeSafe(100f);
+                if (enabled && parent.m_VRRig.GetPlayer() != NetworkSystem.Instance.LocalPlayer && __instance._rigidbody.linearVelocity.magnitude > 5f)
+                    __instance.gameObject.Destroy();
             }
         }
 
@@ -109,13 +110,6 @@ namespace Seralyth.Patches.Menu
 
                 return true;
             }
-        }
-
-        [HarmonyPatch(typeof(RoomSystem), nameof(RoomSystem.SearchForShuttle))]
-        public class SearchForShuttle
-        {
-            public static bool Prefix(object[] shuffleData, PhotonMessageInfoWrapped info) =>
-                !enabled;
         }
 
         [HarmonyPatch(typeof(RoomInfo), nameof(RoomInfo.InternalCacheProperties))]

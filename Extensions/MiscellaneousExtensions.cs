@@ -32,8 +32,8 @@ namespace Seralyth.Extensions
 {
     public static class MiscellaneousExtensions
     {
-        public static float GetDelay(this CallLimiter limiter) =>
-            limiter.timeCooldown / limiter.callHistoryLength;
+        public static bool CanCallNow(this FXSystemSettings settings, int index, float? time = null) =>
+            settings.GetCallLimiter(index).CanCallNow(time);
 
         public static float GetDelay(this FXSystemSettings settings, int index) =>
             settings.GetCallLimiter(index).GetDelay();

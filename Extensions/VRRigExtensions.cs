@@ -21,6 +21,7 @@
 
 using GorillaGameModes;
 using Photon.Pun;
+using Photon.Realtime;
 using Seralyth.Menu;
 using Seralyth.Utilities;
 using System;
@@ -34,14 +35,26 @@ namespace Seralyth.Extensions
 {
     public static class VRRigExtensions
     {
-        public static bool IsLocal(this VRRig rig) =>
+        public static bool IsLocal(this VRRig rig, bool ghostRig = true) =>
             rig != null && (rig.isLocal || (GhostRig != null && rig == GhostRig));
 
         public static bool IsLeftHandGrabbable(this VRRig rig) =>
-            rig != null && (rig.leftMiddle.calcT > 0.8f || rig.leftIndex.calcT > 0.8f) && rig.reliableState.transferrablePosStates.All(s => s != TransferrableObject.PositionState.InLeftHand);
+            rig != null && rig.leftHandLink.CanBeGrabbed();
 
         public static bool IsRightHandGrabbable(this VRRig rig) =>
-           rig != null && (rig.rightMiddle.calcT > 0.8f || rig.rightIndex.calcT > 0.8f) && rig.reliableState.transferrablePosStates.All(s => s != TransferrableObject.PositionState.InRightHand);
+           rig != null && rig.rightHandLink.CanBeGrabbed();
+
+        public static bool IsHoldingLeftIndex(this VRRig rig) =>
+            rig != null && rig.leftIndex.calcT > 0.8f;
+
+        public static bool IsHoldingRightIndex(this VRRig rig) =>
+              rig != null && rig.rightIndex.calcT > 0.8f;
+
+        public static bool IsHoldingLeftGrip(this VRRig rig) =>
+            rig != null && rig.leftMiddle.calcT > 0.8f;
+
+        public static bool IsHoldingRightGrip(this VRRig rig) =>
+           rig != null && rig.rightMiddle.calcT > 0.8f;
 
         public static bool IsTagged(this VRRig rig)
         {

@@ -25,23 +25,27 @@ namespace Seralyth.Extensions
 {
     public static class CallLimiterExtensions
     {
-        public static float GetTimeDelay(this CallLimiter limiter, float time)
+        public static float GetDelay(this CallLimiter limiter)
         {
-            if (limiter == null || limiter.callTimeHistory == null || limiter.callHistoryLength <= 0)
-                return 0f;
-
-            int index = Mathf.Clamp(limiter.oldTimeIndex, 0, limiter.callHistoryLength - 1);
-            float readyAt = limiter.callTimeHistory[index];
-
-            if (readyAt == float.MinValue)
-                return 0f;
-
-            return Mathf.Max(0f, readyAt - time);
+            if (limiter == null) return 0f;
+            int length = limiter.callHistoryLength > 0 ? limiter.callHistoryLength : 1;
+            return limiter.timeCooldown / length;
         }
 
-        public static bool CanCallNow(this CallLimiter limiter, float time)
+        public static bool CanCallNow(this CallLimiter limiter, float? time = null)
         {
-            return GetTimeDelay(limiter, time) <= 0f;
+            if (limiter == null) return false;
+            if (limiter.callTimeHistory == null || limiter.callHistoryLength <= 0) return true;
+
+            float now = time ?? Time.time;
+            int index = limiter.oldTimeIndex;
+            if (index < 0)
+                index = 0;
+            if (index >= limiter.callHistoryLength)
+                index = limiter.callHistoryLength - 1;
+
+            float nextAllowed = limiter.callTimeHistory[index];
+            return nextAllowed == float.MinValue || nextAllowed <= now;
         }
     }
 }

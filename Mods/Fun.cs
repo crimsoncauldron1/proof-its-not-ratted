@@ -1973,44 +1973,17 @@ namespace Seralyth.Mods
 
             Recorder mic = NetworkSystem.Instance.VoiceConnection.PrimaryRecorder;
 
+            if (mic.SamplingRate == (SamplingRate)samplingRate && mic.Bitrate == bitrate)
+                return;
+
+            mic.SamplingRate = (SamplingRate)samplingRate;
+            mic.Bitrate = bitrate;
+
             if (RecorderPatch.enabled)
-            {
-                /*
-                if (VoiceManager.Get().SamplingRate != samplingRate)
-                {
-                    VoiceManager.Get().SamplingRate = samplingRate; 
-                    VoiceManager.Get().OutputRate = samplingRate;
-                }
-                */
+                VoiceManager.Get().SamplingRate = samplingRate;
 
-                if (NetworkSystem.Instance.VoiceSettings.SamplingRate != (SamplingRate)samplingRate)
-                    NetworkSystem.Instance.VoiceSettings.SamplingRate = (SamplingRate)samplingRate;
 
-                if (NetworkSystem.Instance.VoiceSettings.Bitrate != bitrate)
-                    NetworkSystem.Instance.VoiceSettings.Bitrate = bitrate;
-
-                if (mic.IsRecording)
-                {
-                    if (mic.Bitrate != bitrate)
-                        mic.Bitrate = bitrate;
-
-                    if (mic.SamplingRate != (SamplingRate)samplingRate)
-                        mic.SamplingRate = (SamplingRate)samplingRate;
-
-                    mic.RestartRecording();
-                }
-
-            }
-            else
-            {
-                if (mic.SamplingRate == (SamplingRate)samplingRate && mic.Bitrate == bitrate)
-                    return;
-
-                mic.SamplingRate = (SamplingRate)samplingRate;
-                mic.Bitrate = bitrate;
-
-                CoroutineManager.instance.StartCoroutine(DelayReloadMicrophone());
-            }
+            CoroutineManager.instance.StartCoroutine(DelayReloadMicrophone());
         }
 
         public static void SetMicrophoneAmplification(float gain)
@@ -2474,6 +2447,8 @@ namespace Seralyth.Mods
             if (!RecorderPatch.enabled && recorder.SourceType != Recorder.InputSourceType.Microphone)
                 recorder.SourceType = Recorder.InputSourceType.Microphone;
             recorder.RestartRecording(true);
+            if (RecorderPatch.enabled)
+                VoiceManager.Get().RestartMicrophone();
         }
 
         public static IEnumerator DelayReloadMicrophone()
