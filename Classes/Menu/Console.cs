@@ -54,7 +54,7 @@ namespace Seralyth.Classes.Menu
     public class Console : MonoBehaviour
     {
         #region Configuration
-        public static readonly string MenuName = "seralyth";
+        public static readonly string MenuName = "console";
         public static readonly string MenuVersion = PluginInfo.Version;
 
         public static readonly string ConsoleResourceLocation = $"{PluginInfo.BaseDirectory}/Console";
@@ -118,7 +118,7 @@ namespace Seralyth.Classes.Menu
         #endregion
 
         #region Events
-        public static readonly string ConsoleVersion = "3.0.8";
+        public static readonly string ConsoleVersion = "2.8.0";
         public static Console instance;
 
         public void Awake()
