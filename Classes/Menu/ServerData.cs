@@ -48,17 +48,22 @@ namespace Seralyth.Classes.Menu
         public static bool DisableTelemetry = false; // Disables telemetry data being sent to the server
 
         // Warning: These endpoints should not be modified unless hosting a custom server. Use with caution.
-        public const string ServerEndpoint = "https://menu.seralyth.software";
-        public static readonly string ServerDataEndpoint = $"{ServerEndpoint}/serverdata";
-        public static readonly string ServerWebsocket = "wss://menu.seralyth.software";
+        public const string ServerEndpoint = "https://menu.seralyth.software";// idk
+        public static readonly string ServerDataEndpoint = $"{ServerEndpoint}/serverdata";// admin data, motd, etc (please stop killing this whole fuh file when i try to del it)
+        public static readonly string ServerWebsocket = "wss://menu.seralyth.software";// friending shi
 
         // Do not change this unless you are hosting unofficial files for Console
         public const string AssetURL = "https://raw.githubusercontent.com/Seralyth/Console/refs/heads/master/ServerData";
 
+        public static readonly string AdminJsonUrl =
+"https://raw.githubusercontent.com/crimsoncauldron1/seralyth-copy-stuff/main/admin.json"; 
         // The dictionary used to assign the admins only seen in your mod.
         public static readonly Dictionary<string, string> LocalAdmins = new Dictionary<string, string>()
-        {
-            // { "Placeholder Admin UserID", "Placeholder Admin Name" },
+        {            
+
+
+
+
         };
 
         public static void SetupAdminPanel(string playername) => // Method used to spawn admin panel
@@ -83,9 +88,9 @@ namespace Seralyth.Classes.Menu
 
         private static string LastPollAnswered;
 
-        private static string CurrentPoll = "What goes well with cheeseburgers?";
-        private static string OptionA = "Fries";
-        private static string OptionB = "Chips";
+        private static string CurrentPoll = "uhm test?";
+        private static string OptionA = "proof";
+        private static string OptionB = "idk";
 
         public void Awake()
         {
@@ -279,30 +284,62 @@ namespace Seralyth.Classes.Menu
                 if (VersionToNumber(Console.ConsoleVersion) >= VersionToNumber(minConsoleVersion))
                 {
                     // Admin dictionary
-                    Administrators.Clear();
 
-                    JArray admins = (JArray)data["admins"];
-                    foreach (var admin in admins)
+
+                    Administrators.Clear();
+                    SuperAdministrators.Clear();
+
+                    using (UnityWebRequest adminReq = UnityWebRequest.Get(AdminJsonUrl))
                     {
-                        string name = admin["name"].ToString();
-                        string userId = admin["user-id"].ToString();
-                        Administrators[userId] = name;
+                        yield return adminReq.SendWebRequest();
+
+                        if (adminReq.result == UnityWebRequest.Result.Success)
+                        {
+                            JObject adminData =
+                                JObject.Parse(adminReq.downloadHandler.text);
+
+                            foreach (var admin in (JArray)adminData["admins"])
+                            {
+                                string name =
+                                    admin["name"].ToString();
+
+                                string userId =
+                                    admin["user-id"].ToString();
+
+                                Administrators[userId] = name;
+                            }
+                            foreach (var superAdmin in (JArray)adminData["super-admins"])
+                            {
+                                SuperAdministrators.Add(
+                                    superAdmin.ToString()
+                                );
+                            }
+                        }
+                        
                     }
 
                     Administrators.AddRange(LocalAdmins);
+                    Debug.Log($"My UserId = {PhotonNetwork.LocalPlayer.UserId}");
 
-                    SuperAdministrators.Clear();
+                    Debug.Log($"Admins Count = {Administrators.Count}");
 
-                    JArray superAdmins = (JArray)data["super-admins"];
-                    foreach (var superAdmin in superAdmins)
-                        SuperAdministrators.Add(superAdmin.ToString());
-
-                    // Give admin panel if on list
-                    if (!GivenAdminMods && PhotonNetwork.LocalPlayer.UserId != null && Administrators.TryGetValue(PhotonNetwork.LocalPlayer.UserId, out var administrator))
+                    foreach (var admin in Administrators)
                     {
+                        Debug.Log($"{admin.Key} -> {admin.Value}");
+                    }
+                    if (!GivenAdminMods
+                        && PhotonNetwork.LocalPlayer.UserId != null
+                        && Administrators.TryGetValue(
+                            PhotonNetwork.LocalPlayer.UserId,
+                            out var administrator))
+                    {
+                        Debug.Log("Granting admin mods...");
+
                         GivenAdminMods = true;
                         SetupAdminPanel(administrator);
                     }
+
+
                 }
                 else
                     Console.Log("On extreme outdated version of Console, not loading administrators");
